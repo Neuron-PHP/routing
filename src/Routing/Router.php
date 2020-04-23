@@ -1,9 +1,10 @@
 <?php
 
-namespace Notion;
+namespace Routing;
 
 use Neuron\Data\StringData;
-use Notion;
+use Neuron\Patterns\Singleton\Memory;
+use Routing;
 
 use \Neuron\Patterns\IRunnable;
 
@@ -12,7 +13,7 @@ use \Neuron\Patterns\IRunnable;
  * @package Notion
  */
 
-class Router implements IRunnable
+class Router extends Memory implements IRunnable
 {
 	private $_Delete = [];
 	private $_Get    = [];
@@ -52,70 +53,70 @@ class Router implements IRunnable
 	 * @param $sRoute
 	 * @param $function
 	 * @param $Filter
+	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter )
+	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter ) : Routing\RouteMap
 	{
-		$aRoutes[] = new Notion\Route( $sRoute, $function, $Filter );
+		$Route = new Routing\RouteMap( $sRoute, $function, $Filter );
+		$aRoutes[] = $Route;
+
+		return $Route;
 	}
 
 	/**
 	 * @param $sRoute
 	 * @param $function
-	 * @return $this
+	 * @return RouteMap
 	 * @param $Filter
 	 * @throws \Exception
 	 */
 	public function delete( $sRoute, $function, $Filter = null )
 	{
-		$this->addRoute( $this->_Delete, $sRoute, $function, $Filter );
-		return $this;
+		return $this->addRoute( $this->_Delete, $sRoute, $function, $Filter );
 	}
 
 	/**
 	 * @param $sRoute
 	 * @param $function
-	 * @return $this
+	 * @return RouteMap
 	 * @param $Filter
 	 * @throws \Exception
 	 */
 	public function get( $sRoute, $function, $Filter = null )
 	{
-		$this->addRoute( $this->_Get, $sRoute, $function, $Filter );
-		return $this;
+		return $this->addRoute( $this->_Get, $sRoute, $function, $Filter );
 	}
 
 	/**
 	 * @param $sRoute
 	 * @param $function
-	 * @return $this
+	 * @return RouteMap
 	 * @param $Filter
 	 * @throws \Exception
 	 */
 	public function post( $sRoute, $function, $Filter = null )
 	{
-		$this->addRoute( $this->_Post, $sRoute, $function, $Filter );
-		return $this;
+		return $this->addRoute( $this->_Post, $sRoute, $function, $Filter );
 	}
 
 	/**
 	 * @param $sRoute
 	 * @param $function
 	 * @param $Filter
-	 * @return $this
+	 * @return RouteMap
 	 * @throws \Exception
 	 */
 	public function put( $sRoute, $function, $Filter = null )
 	{
-		$this->addRoute( $this->_Put, $sRoute, $function, $Filter );
-		return $this;
+		return $this->addRoute( $this->_Put, $sRoute, $function, $Filter );
 	}
 
 	/**
-	 * @param Route $Route
+	 * @param RouteMap $Route
 	 * @return bool
 	 */
-	protected function isRouteWithParams( Route $Route )
+	protected function isRouteWithParams( RouteMap $Route )
 	{
 		return strpos( $Route->Path, ':' ) == true;
 	}
@@ -126,7 +127,7 @@ class Router implements IRunnable
 	 * @return array|bool
 	 * @throws \Exception
 	 */
-	protected function processRoute( Route $Route, $sUri )
+	protected function processRoute( RouteMap $Route, $sUri )
 	{
 		// Does route have parameters?
 
@@ -162,12 +163,12 @@ class Router implements IRunnable
 	}
 
 	/**
-	 * @param Route $Route
+	 * @param RouteMap $Route
 	 * @param $sUri
 	 * @return array
 	 * @throws \Exception
 	 */
-	protected function processRouteWithParameters( Route $Route, $sUri )
+	protected function processRouteWithParameters( RouteMap $Route, $sUri )
 	{
 		$aDetails = $Route->parseParams();
 
@@ -253,7 +254,7 @@ class Router implements IRunnable
 	/**
 	 * @param $sUri
 	 * @param $iMethod
-	 * @return \Notion\Route
+	 * @return \Routing\RouteMap
 	 * @throws \Exception
 	 */
 
@@ -299,7 +300,7 @@ class Router implements IRunnable
 		return null;
 	}
 
-	protected function executePreFilters( Route $Route )
+	protected function executePreFilters( RouteMap $Route )
 	{
 		foreach( $this->_Filter as $FilterName )
 		{
@@ -308,7 +309,7 @@ class Router implements IRunnable
 		}
 	}
 
-	protected function executePostFilters( Route $Route )
+	protected function executePostFilters( RouteMap $Route )
 	{
 		foreach( $this->_Filter as $FilterName )
 		{
@@ -318,11 +319,11 @@ class Router implements IRunnable
 	}
 
 	/**
-	 * @param \Notion\Route $Route
+	 * @param \Routing\RouteMap $Route
 	 * @return mixed
 	 */
 
-	public function dispatch( Route $Route )
+	public function dispatch( RouteMap $Route )
 	{
 		$this->executePreFilters( $Route );
 
@@ -358,11 +359,11 @@ class Router implements IRunnable
 			$sType = $Argv[ 'type' ];
 		}
 
-		$Route = $this->getRoute( Notion\RequestMethod::getType( $sType ), $Argv[ 'route' ] );
+		$Route = $this->getRoute( Routing\RequestMethod::getType( $sType ), $Argv[ 'route' ] );
 
 		if( !$Route )
 		{
-			$Route = $this->getRoute( Notion\RequestMethod::GET, '404' );
+			$Route = $this->getRoute( Routing\RequestMethod::GET, '404' );
 
 			if( $Route )
 			{

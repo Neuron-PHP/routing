@@ -1,6 +1,6 @@
 <?php
 
-namespace Notion;
+namespace Routing;
 
 class Filter
 {
@@ -13,7 +13,7 @@ class Filter
 		$this->_PostFn = $PostFn;
 	}
 
-	public function pre( Route $Route )
+	public function pre( RouteMap $Route )
 	{
 		if( !$this->_PreFn )
 		{
@@ -25,7 +25,7 @@ class Filter
 		return $Function( $Route );
 	}
 
-	public function post( Route $Route )
+	public function post( RouteMap $Route )
 	{
 		if( !$this->_PostFn )
 		{

@@ -1,27 +1,28 @@
 <?php
 require_once '../vendor/autoload.php';
 
-$App = new Notion\Router();
-
-$App->get( '/',
+Route::get( '/',
 		function()
 		{
 			echo 'Home Page';
 		}
-	)
-	->get( '/about',
+	);
+
+Route::get( '/about',
 		function()
 		{
 			echo 'About Page';
 		}
-	)
-	->get( '/test/:name',
+	);
+
+Route::get( '/test/:name',
 		function( $parameters )
 		{
 			echo "Name = $parameters[name]";
 		}
-	)
-	->get( '/404',
+	);
+
+Route::get( '/404',
 		function( $parameters )
 		{
 			echo "No route found for $parameters[route]";
@@ -31,7 +32,7 @@ $App->get( '/',
 $Get    = new \Neuron\Data\Filter\Get();
 $Server = new \Neuron\Data\Filter\Server();
 
-$App->run(
+Route::dispatch(
 	[
 		'route' => $Get->filterScalar( 'route' ),
 		'type'  => $Server->filterScalar( 'METHOD' )

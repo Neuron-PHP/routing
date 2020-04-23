@@ -1,12 +1,14 @@
 # Versions
 
+### 0.3.0
+
 ### 0.2.2 2018-06-05
 
 * Fixed for php56.
 
 ### 0.2.1 2018-02-23
 
-* Adds Route as param to filter.
+* Adds RouteMap as param to filter.
 
 ### 0.2.0 2018-02-23
 

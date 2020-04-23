@@ -1,6 +1,6 @@
-# Notion
+# Routing
 
-Notion is a lightweight router/dispatcher is the vein of Ruby's Sinatra 
+The neuron router is a lightweight router/dispatcher is the vein of Ruby's Sinatra 
 or Python's Flask. It allows for a very quick method for creating an app
 using restful routes or to add them to an existing application.
 
@@ -13,7 +13,7 @@ using restful routes or to add them to an existing application.
 
 The best way to install Notion is via [Composer](http://getcomposer.org)
 
-Our package is located [here](https://packagist.org/packages/clearidea/notion)
+Our package is located [here](https://packagist.org/packages/neuron-php/routing)
 
 Install Composer
 
@@ -21,7 +21,7 @@ Install Composer
 
 Add the Notion Package
 
-    php composer.phar require clearidea/notion
+    php composer.phar require neuron-php/routing
 
 Install Later Updates
 
@@ -44,43 +44,42 @@ several routes including one with a variable.
 
     <?php
     require_once '../vendor/autoload.php';
-
-    $App = new Notion\Router();
     
-    $App->get( '/',
+    Route::get( '/',
             function()
             {
                 echo 'Home Page';
             }
-        )
-        ->get( '/about',
+        );
+    
+    Route::get( '/about',
             function()
             {
                 echo 'About Page';
             }
-        )
-        ->get( '/test/:name',
+        );
+    
+    Route::get( '/test/:name',
             function( $parameters )
             {
                 echo "Name = $parameters[name]";
             }
-        )
-        ->get( '/404',
+        );
+    
+    Route::get( '/404',
             function( $parameters )
             {
                 echo "No route found for $parameters[route]";
             }
         );
     
-    $Filter = new \Neuron\Data\Filter\Get();
+    $Get    = new \Neuron\Data\Filter\Get();
     $Server = new \Neuron\Data\Filter\Server();
     
-    $App->run(
+    Route::dispatch(
         [
-            'route' => $Filter->filterScalar( 'route' ),
-            'type'  => $Server->filterScalar( 'REQUEST_METHOD' ),
-            'extra' =>
-                [ 'test' => '1234' ]
+            'route' => $Get->filterScalar( 'route' ),
+            'type'  => $Server->filterScalar( 'METHOD' )
         ]
     );
 

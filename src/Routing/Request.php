@@ -1,6 +1,6 @@
 <?php
 
-namespace Notion;
+namespace Routing;
 
 use Neuron\Data\Filter\Get;
 use Neuron\Data\Filter\Post;
@@ -17,10 +17,10 @@ class Request
 
 	/**
 	 * Request constructor.
-	 * @param Route $Route
+	 * @param RouteMap $Route
 	 * @param $Method
 	 */
-	public function __construct( Route $Route, $Method )
+	public function __construct( RouteMap $Route, $Method )
 	{
 		$this->_Get           = new Get();
 		$this->_Post          = new Post();
@@ -46,7 +46,7 @@ class Request
 	}
 
 	/**
-	 * @return Route
+	 * @return RouteMap
 	 */
 	public function getRoute()
 	{

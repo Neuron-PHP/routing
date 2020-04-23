@@ -1,16 +1,17 @@
 <?php
 
-namespace Notion;
+namespace Routing;
 
-class Route
+class RouteMap
 {
 	public $Path;
 	public $Function;
 	public $Parameters;
 	public $Filter;
+	public $Name;
 
 	/**
-	 * Route constructor.
+	 * RouteMap constructor.
 	 * @param $path string route path i.e. /part/new or /part/:id
 	 * @param $function the function to call on a matching route.
 	 * @param $Filter string the name of the filter to match with this route.
@@ -21,7 +22,7 @@ class Route
 	{
 		if( !is_callable( $function ) )
 		{
-			throw new \Exception( 'Route: function not callable.' );
+			throw new \Exception( 'RouteMap: function not callable.' );
 		}
 
 		$this->Path       = $path;
@@ -29,6 +30,97 @@ class Route
 		$this->Parameters = null;
 		$this->Filter     = $Filter;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getPath()
+	{
+		return $this->Path;
+	}
+
+	/**
+	 * @param string $Path
+	 * @return RouteMap
+	 */
+	public function setPath( $Path )
+	{
+		$this->Path = $Path;
+		return $this;
+	}
+
+	/**
+	 * @return callable|the
+	 */
+	public function getFunction()
+	{
+		return $this->Function;
+	}
+
+	/**
+	 * @param callable|the $Function
+	 * @return RouteMap
+	 */
+	public function setFunction( $Function )
+	{
+		$this->Function = $Function;
+		return $this;
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getParameters()
+	{
+		return $this->Parameters;
+	}
+
+	/**
+	 * @param null $Parameters
+	 * @return RouteMap
+	 */
+	public function setParameters( $Parameters )
+	{
+		$this->Parameters = $Parameters;
+		return $this;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getFilter()
+	{
+		return $this->Filter;
+	}
+
+	/**
+	 * @param string|null $Filter
+	 * @return RouteMap
+	 */
+	public function setFilter( $Filter )
+	{
+		$this->Filter = $Filter;
+		return $this;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getName()
+	{
+		return $this->Name;
+	}
+
+	/**
+	 * @param mixed $Name
+	 * @return RouteMap
+	 */
+	public function setName( $Name )
+	{
+		$this->Name = $Name;
+		return $this;
+	}
+
 
 	/**
 	 * Extracts the template array from the route definition.
