@@ -1,6 +1,6 @@
 <?php
 
-namespace Notion;
+namespace Routing;
 
 use Neuron\Data\Filter\Get;
 use Neuron\Data\Filter\Post;

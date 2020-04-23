@@ -8,7 +8,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
 	protected function setUp() : void
 	{
-		$this->Router = new \Notion\Router();
+		$this->Router = new \Routing\Router();
 	}
 
 	public function testDelete()
@@ -22,7 +22,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::DELETE,
+			Routing\RequestMethod::DELETE,
 			'/delete/1'
 		);
 
@@ -55,7 +55,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 				]
 			);
 		}
-		catch( \Notion\RouteParamException $exception )
+		catch( \Routing\RouteParamException $exception )
 		{
 			$Caught = true;
 		}
@@ -68,7 +68,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		$this->Router->get( '/get/:id', function(){ return 'get'; } );
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'/get/1'
 		);
 
@@ -82,12 +82,12 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'/get/1/2'
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'/monkey/1/2'
 		);
 	}
@@ -117,7 +117,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'/test/run'
 		);
 
@@ -173,7 +173,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		$this->Router->post( '/post', function(){ return 'post'; } );
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::POST,
+			Routing\RequestMethod::POST,
 			'post'
 		);
 
@@ -192,7 +192,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		$this->Router->put( '/put', function(){ return 'put'; } );
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::PUT,
+			Routing\RequestMethod::PUT,
 			'put'
 		);
 
@@ -219,7 +219,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::DELETE,
+			Routing\RequestMethod::DELETE,
 			'/delete/1'
 		);
 

@@ -1,7 +1,7 @@
 <?php
 
-use Notion\RequestMethod;
-use Notion\Route;
+use Routing\RequestMethod;
+use Routing\Route;
 use PHPUnit\Framework\TestCase;
 
 class RouteTest extends TestCase
@@ -16,8 +16,8 @@ class RouteTest extends TestCase
 			}
 		);
 
-		$Route = \Notion\Router::getInstance()->getRoute(
-			Notion\RequestMethod::DELETE,
+		$Route = \Routing\Router::getInstance()->getRoute(
+			Routing\RequestMethod::DELETE,
 			'/delete/1'
 		);
 
@@ -35,8 +35,8 @@ class RouteTest extends TestCase
 	{
 		Route::post( '/post', function(){ return 'post'; } );
 
-		$Route = \Notion\Router::getInstance()->getRoute(
-			Notion\RequestMethod::POST,
+		$Route = \Routing\Router::getInstance()->getRoute(
+			Routing\RequestMethod::POST,
 			'post'
 		);
 
@@ -55,8 +55,8 @@ class RouteTest extends TestCase
 	{
 		Route::put( '/put', function(){ return 'put'; } );
 
-		$Route = \Notion\Router::getInstance()->getRoute(
-			Notion\RequestMethod::PUT,
+		$Route = \Routing\Router::getInstance()->getRoute(
+			Routing\RequestMethod::PUT,
 			'put'
 		);
 
@@ -78,8 +78,8 @@ class RouteTest extends TestCase
 			)
 			->setName( 'test.get' );
 
-		$Route = \Notion\Router::getInstance()->getRoute(
-			Notion\RequestMethod::GET,
+		$Route = \Routing\Router::getInstance()->getRoute(
+			Routing\RequestMethod::GET,
 			'/get/1'
 		);
 
@@ -97,13 +97,13 @@ class RouteTest extends TestCase
 			'/get/:id'
 		);
 
-		$Route = \Notion\Router::getInstance()->getRoute(
-			Notion\RequestMethod::GET,
+		$Route = \Routing\Router::getInstance()->getRoute(
+			Routing\RequestMethod::GET,
 			'/get/1/2'
 		);
 
-		$Route = \Notion\Router::getInstance()->getRoute(
-			Notion\RequestMethod::GET,
+		$Route = \Routing\Router::getInstance()->getRoute(
+			Routing\RequestMethod::GET,
 			'/monkey/1/2'
 		);
 

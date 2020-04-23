@@ -8,7 +8,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 	protected function setUp() : void
 	{
-		$this->Router = new \Notion\Router();
+		$this->Router = new \Routing\Router();
 	}
 
 	public function testRoutePreFilter()
@@ -18,8 +18,8 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PreFilter',
-			new \Notion\Filter(
-				function( \Notion\RouteMap $Route ) use ( &$Filter, &$Name )
+			new \Routing\Filter(
+				function( \Routing\RouteMap $Route ) use ( &$Filter, &$Name )
 				{
 					$Filter = true;
 					$Name = $Route->Path;
@@ -34,7 +34,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 			);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'/test'
 		);
 
@@ -52,7 +52,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PostFilter',
-			new \Notion\Filter(
+			new \Routing\Filter(
 				null,
 				function() use ( &$Filter ) { $Filter = true; }
 			)
@@ -65,7 +65,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'test'
 		);
 
@@ -80,7 +80,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PreFilter',
-			new \Notion\Filter(
+			new \Routing\Filter(
 				function() use ( &$Filter ) { $Filter = true; }
 			)
 		);
@@ -92,7 +92,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'/test'
 		);
 
@@ -109,7 +109,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PostFilter',
-			new \Notion\Filter(
+			new \Routing\Filter(
 				null,
 				function() use ( &$Filter ) { $Filter = true; }
 			)
@@ -123,7 +123,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 		);
 
 		$Route = $this->Router->getRoute(
-			Notion\RequestMethod::GET,
+			Routing\RequestMethod::GET,
 			'test'
 		);
 

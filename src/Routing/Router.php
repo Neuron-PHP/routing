@@ -1,10 +1,10 @@
 <?php
 
-namespace Notion;
+namespace Routing;
 
 use Neuron\Data\StringData;
 use Neuron\Patterns\Singleton\Memory;
-use Notion;
+use Routing;
 
 use \Neuron\Patterns\IRunnable;
 
@@ -56,9 +56,9 @@ class Router extends Memory implements IRunnable
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter ) : Notion\RouteMap
+	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter ) : Routing\RouteMap
 	{
-		$Route = new Notion\RouteMap( $sRoute, $function, $Filter );
+		$Route = new Routing\RouteMap( $sRoute, $function, $Filter );
 		$aRoutes[] = $Route;
 
 		return $Route;
@@ -254,7 +254,7 @@ class Router extends Memory implements IRunnable
 	/**
 	 * @param $sUri
 	 * @param $iMethod
-	 * @return \Notion\RouteMap
+	 * @return \Routing\RouteMap
 	 * @throws \Exception
 	 */
 
@@ -319,7 +319,7 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param \Notion\RouteMap $Route
+	 * @param \Routing\RouteMap $Route
 	 * @return mixed
 	 */
 
@@ -359,11 +359,11 @@ class Router extends Memory implements IRunnable
 			$sType = $Argv[ 'type' ];
 		}
 
-		$Route = $this->getRoute( Notion\RequestMethod::getType( $sType ), $Argv[ 'route' ] );
+		$Route = $this->getRoute( Routing\RequestMethod::getType( $sType ), $Argv[ 'route' ] );
 
 		if( !$Route )
 		{
-			$Route = $this->getRoute( Notion\RequestMethod::GET, '404' );
+			$Route = $this->getRoute( Routing\RequestMethod::GET, '404' );
 
 			if( $Route )
 			{

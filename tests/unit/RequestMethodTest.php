@@ -13,28 +13,28 @@ class RequestMethodTest extends PHPUnit\Framework\TestCase
 	public function testMethod()
 	{
 		$this->assertEquals(
-			\Notion\RequestMethod::getType( 'GET' ),
-			\Notion\RequestMethod::GET
+			\Routing\RequestMethod::getType( 'GET' ),
+			\Routing\RequestMethod::GET
 		);
 
 		$this->assertEquals(
-			\Notion\RequestMethod::getType( 'PUT' ),
-			\Notion\RequestMethod::PUT
+			\Routing\RequestMethod::getType( 'PUT' ),
+			\Routing\RequestMethod::PUT
 		);
 
 		$this->assertEquals(
-			\Notion\RequestMethod::getType( 'DELETE' ),
-			\Notion\RequestMethod::DELETE
+			\Routing\RequestMethod::getType( 'DELETE' ),
+			\Routing\RequestMethod::DELETE
 		);
 
 		$this->assertEquals(
-			\Notion\RequestMethod::getType( 'POST' ),
-			\Notion\RequestMethod::POST
+			\Routing\RequestMethod::getType( 'POST' ),
+			\Routing\RequestMethod::POST
 		);
 
 		$this->assertEquals(
-			\Notion\RequestMethod::getType( 'FOO' ),
-			\Notion\RequestMethod::UNKNOWN
+			\Routing\RequestMethod::getType( 'FOO' ),
+			\Routing\RequestMethod::UNKNOWN
 		);
 
 	}

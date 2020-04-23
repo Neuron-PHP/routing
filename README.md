@@ -1,6 +1,6 @@
-# Notion
+# Routing
 
-Notion is a lightweight router/dispatcher is the vein of Ruby's Sinatra 
+The neuron router is a lightweight router/dispatcher is the vein of Ruby's Sinatra 
 or Python's Flask. It allows for a very quick method for creating an app
 using restful routes or to add them to an existing application.
 
@@ -13,7 +13,7 @@ using restful routes or to add them to an existing application.
 
 The best way to install Notion is via [Composer](http://getcomposer.org)
 
-Our package is located [here](https://packagist.org/packages/clearidea/notion)
+Our package is located [here](https://packagist.org/packages/neuron-php/routing)
 
 Install Composer
 
@@ -21,7 +21,7 @@ Install Composer
 
 Add the Notion Package
 
-    php composer.phar require clearidea/notion
+    php composer.phar require neuron-php/routing
 
 Install Later Updates
 
