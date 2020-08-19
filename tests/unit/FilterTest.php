@@ -66,7 +66,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$Route = $this->Router->getRoute(
 			Routing\RequestMethod::GET,
-			'test'
+			'/test'
 		);
 
 		$this->Router->dispatch( $Route );
@@ -93,7 +93,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$Route = $this->Router->getRoute(
 			Routing\RequestMethod::GET,
-			'/test'
+			'test'
 		);
 
 		$this->assertNotEmpty( $Route );
