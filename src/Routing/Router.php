@@ -1,10 +1,9 @@
 <?php
 
-namespace Routing;
+namespace Neuron\Routing;
 
 use Neuron\Data\StringData;
 use Neuron\Patterns\Singleton\Memory;
-use Routing;
 
 use \Neuron\Patterns\IRunnable;
 
@@ -70,9 +69,9 @@ class Router extends Memory implements IRunnable
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter ) : Routing\RouteMap
+	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter ) : RouteMap
 	{
-		$Route = new Routing\RouteMap( $sRoute, $function, $Filter );
+		$Route = new RouteMap( $sRoute, $function, $Filter ?? '' );
 		$aRoutes[] = $Route;
 
 		return $Route;
@@ -97,7 +96,7 @@ class Router extends Memory implements IRunnable
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function get( $sRoute, $function, $Filter = null ) : Routing\RouteMap
+	public function get( $sRoute, $function, $Filter = null ) : RouteMap
 	{
 		return $this->addRoute( $this->_Get, $sRoute, $function, $Filter );
 	}
@@ -109,7 +108,7 @@ class Router extends Memory implements IRunnable
 	 * @param $Filter
 	 * @throws \Exception
 	 */
-	public function post( $sRoute, $function, $Filter = null ) : Routing\RouteMap
+	public function post( $sRoute, $function, $Filter = null ) : RouteMap
 	{
 		return $this->addRoute( $this->_Post, $sRoute, $function, $Filter );
 	}
@@ -121,7 +120,7 @@ class Router extends Memory implements IRunnable
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function put( $sRoute, $function, $Filter = null ) : Routing\RouteMap
+	public function put( $sRoute, $function, $Filter = null ) : RouteMap
 	{
 		return $this->addRoute( $this->_Put, $sRoute, $function, $Filter );
 	}
@@ -268,7 +267,7 @@ class Router extends Memory implements IRunnable
 	/**
 	 * @param $Uri
 	 * @param $Method
-	 * @return \Routing\RouteMap
+	 * @return RouteMap
 	 * @throws \Exception
 	 */
 
@@ -284,7 +283,7 @@ class Router extends Memory implements IRunnable
 
 				if( is_array( $Params ) )
 				{
-					$Route->Parameters = null;
+					$Route->Parameters = [];
 					return $Route;
 				}
 			}
@@ -304,7 +303,7 @@ class Router extends Memory implements IRunnable
 					}
 					else
 					{
-						$Route->Parameters = null;
+						$Route->Parameters = [];
 					}
 
 					return $Route;
@@ -334,7 +333,7 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param \Routing\RouteMap $Route
+	 * @param RouteMap $Route
 	 * @return mixed
 	 */
 
@@ -374,11 +373,11 @@ class Router extends Memory implements IRunnable
 			$sType = $Argv[ 'type' ];
 		}
 
-		$Route = $this->getRoute( Routing\RequestMethod::getType( $sType ), $Argv[ 'route' ] );
+		$Route = $this->getRoute( RequestMethod::getType( $sType ), $Argv[ 'route' ] );
 
 		if( !$Route )
 		{
-			$Route = $this->getRoute( Routing\RequestMethod::GET, '404' );
+			$Route = $this->getRoute( RequestMethod::GET, '404' );
 
 			if( $Route )
 			{

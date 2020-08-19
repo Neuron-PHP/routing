@@ -1,6 +1,6 @@
 <?php
 
-namespace Routing;
+namespace Neuron\Routing;
 
 class RequestMethod
 {
@@ -16,7 +16,7 @@ class RequestMethod
 	 * @return int
 	 */
 
-	static public function getType( $Method )
+	static public function getType( string $Method ) : int
 	{
 		switch( $Method )
 		{

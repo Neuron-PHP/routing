@@ -1,6 +1,6 @@
 <?php
 
-namespace Routing;
+namespace Neuron\Routing;
 
 class RouteParamException extends \Exception
 {

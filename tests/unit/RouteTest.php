@@ -1,14 +1,13 @@
 <?php
 
-use Routing\RequestMethod;
-use Routing\Route;
 use PHPUnit\Framework\TestCase;
+use Neuron\Routing;
 
 class RouteTest extends TestCase
 {
 	public function testDelete()
 	{
-		Route::delete(
+		Routing\Route::delete(
 			'/delete/:id',
 			function()
 			{
@@ -16,7 +15,7 @@ class RouteTest extends TestCase
 			}
 		);
 
-		$Route = \Routing\Router::getInstance()->getRoute(
+		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::DELETE,
 			'/delete/1'
 		);
@@ -33,9 +32,9 @@ class RouteTest extends TestCase
 
 	public function testPost()
 	{
-		Route::post( '/post', function(){ return 'post'; } );
+		Routing\Route::post( '/post', function(){ return 'post'; } );
 
-		$Route = \Routing\Router::getInstance()->getRoute(
+		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::POST,
 			'post'
 		);
@@ -53,9 +52,9 @@ class RouteTest extends TestCase
 
 	public function testPut()
 	{
-		Route::put( '/put', function(){ return 'put'; } );
+		Routing\Route::put( '/put', function(){ return 'put'; } );
 
-		$Route = \Routing\Router::getInstance()->getRoute(
+		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::PUT,
 			'put'
 		);
@@ -72,13 +71,13 @@ class RouteTest extends TestCase
 
 	public function testGet()
 	{
-		Route::get(
+		Routing\Route::get(
 			'/get/:id',
 			function(){ return 'get'; }
 			)
 			->setName( 'test.get' );
 
-		$Route = \Routing\Router::getInstance()->getRoute(
+		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::GET,
 			'/get/1'
 		);
@@ -97,12 +96,12 @@ class RouteTest extends TestCase
 			'/get/:id'
 		);
 
-		$Route = \Routing\Router::getInstance()->getRoute(
+		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::GET,
 			'/get/1/2'
 		);
 
-		$Route = \Routing\Router::getInstance()->getRoute(
+		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::GET,
 			'/monkey/1/2'
 		);
@@ -114,11 +113,11 @@ class RouteTest extends TestCase
 	 */
 	public function testDispatch()
 	{
-		Route::get( '/', function(){} );
+		Routing\Route::get( '/', function(){} );
 
 		try
 		{
-			Route::dispatch(
+			Routing\Route::dispatch(
 				[
 					'route' => '/',
 					'type'  => 'GET'

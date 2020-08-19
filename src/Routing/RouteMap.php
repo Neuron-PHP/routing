@@ -1,33 +1,33 @@
 <?php
 
-namespace Routing;
+namespace Neuron\Routing;
 
 class RouteMap
 {
-	public $Path;
+	public string $Path;
 	public $Function;
-	public $Parameters;
-	public $Filter;
+	public array $Parameters;
+	public string $Filter;
 	public $Name;
 
 	/**
 	 * RouteMap constructor.
-	 * @param $path string route path i.e. /part/new or /part/:id
-	 * @param $function the function to call on a matching route.
+	 * @param $Path string route path i.e. /part/new or /part/:id
+	 * @param $Function callable the function to call on a matching route.
 	 * @param $Filter string the name of the filter to match with this route.
 	 * @throws \Exception
 	 */
 
-	public function __construct( $path, $function, $Filter = null )
+	public function __construct( string $Path, callable $Function, string $Filter = '' )
 	{
-		if( !is_callable( $function ) )
+		if( !is_callable( $Function ) )
 		{
 			throw new \Exception( 'RouteMap: function not callable.' );
 		}
 
-		$this->Path       = $path;
-		$this->Function   = $function;
-		$this->Parameters = null;
+		$this->Path       = $Path;
+		$this->Function   = $Function;
+		$this->Parameters = [];
 		$this->Filter     = $Filter;
 	}
 
@@ -43,25 +43,25 @@ class RouteMap
 	 * @param string $Path
 	 * @return RouteMap
 	 */
-	public function setPath( $Path )
+	public function setPath( string $Path ) : RouteMap
 	{
 		$this->Path = $Path;
 		return $this;
 	}
 
 	/**
-	 * @return callable|the
+	 * @return callable
 	 */
-	public function getFunction()
+	public function getFunction() : callable
 	{
 		return $this->Function;
 	}
 
 	/**
-	 * @param callable|the $Function
+	 * @param callable $Function
 	 * @return RouteMap
 	 */
-	public function setFunction( $Function )
+	public function setFunction( callable $Function ) : RouteMap
 	{
 		$this->Function = $Function;
 		return $this;
@@ -70,16 +70,16 @@ class RouteMap
 	/**
 	 * @return null
 	 */
-	public function getParameters()
+	public function getParameters() : array
 	{
 		return $this->Parameters;
 	}
 
 	/**
-	 * @param null $Parameters
+	 * @param array $Parameters
 	 * @return RouteMap
 	 */
-	public function setParameters( $Parameters )
+	public function setParameters( array $Parameters ) : RouteMap
 	{
 		$this->Parameters = $Parameters;
 		return $this;
@@ -97,7 +97,7 @@ class RouteMap
 	 * @param string|null $Filter
 	 * @return RouteMap
 	 */
-	public function setFilter( $Filter )
+	public function setFilter( string $Filter ) : RouteMap
 	{
 		$this->Filter = $Filter;
 		return $this;
@@ -115,7 +115,7 @@ class RouteMap
 	 * @param mixed $Name
 	 * @return RouteMap
 	 */
-	public function setName( $Name )
+	public function setName( $Name ) : RouteMap
 	{
 		$this->Name = $Name;
 		return $this;

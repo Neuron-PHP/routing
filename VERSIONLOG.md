@@ -1,4 +1,5 @@
 ## 0.5.2
+* Refactored for php 74.
 
 ## 0.5.1 2020-08-19
 * Updates to support changes in dependencies.

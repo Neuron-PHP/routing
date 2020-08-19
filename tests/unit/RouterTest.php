@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use Neuron\Routing;
 
 class RouterTest extends PHPUnit\Framework\TestCase
 {
@@ -8,7 +9,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
 	protected function setUp() : void
 	{
-		$this->Router = new \Routing\Router();
+		$this->Router = new Routing\Router();
 	}
 
 	public function testDelete()
@@ -55,7 +56,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 				]
 			);
 		}
-		catch( \Routing\RouteParamException $exception )
+		catch( Routing\RouteParamException $exception )
 		{
 			$Caught = true;
 		}
