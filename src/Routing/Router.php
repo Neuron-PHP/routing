@@ -15,20 +15,30 @@ use \Neuron\Patterns\IRunnable;
 
 class Router extends Memory implements IRunnable
 {
-	private $_Delete = [];
-	private $_Get    = [];
-	private $_Post   = [];
-	private $_Put    = [];
-	private $_Filter = [];
+	private array $_Delete = [];
+	private array $_Get    = [];
+	private array $_Post   = [];
+	private array $_Put    = [];
+	private array $_Filter = [];
 
-	private $_FilterRegistry = [];
+	private array $_FilterRegistry = [];
 
+	/**
+	 * @param $Name
+	 * @param Filter $Filter
+	 */
 	public function registerFilter( $Name, Filter $Filter )
 	{
 		$this->_FilterRegistry[ $Name ] = $Filter;
 	}
 
-	public function getFilter( $Name )
+	/**
+	 * @param string $Name
+	 * @return Filter
+	 * @throws \Exception
+	 */
+
+	public function getFilter( string $Name ) : Filter
 	{
 		$Filter = null;
 
@@ -40,10 +50,14 @@ class Router extends Memory implements IRunnable
 		{
 			throw new \Exception( "Filter $Name not registered." );
 		}
+
 		return $Filter;
 	}
 
-	public function addFilter( $Filter )
+	/**
+	 * @param string $Filter
+	 */
+	public function addFilter( string $Filter )
 	{
 		$this->_Filter[] = $Filter;
 	}
@@ -79,11 +93,11 @@ class Router extends Memory implements IRunnable
 	/**
 	 * @param $sRoute
 	 * @param $function
+	 * @param null $Filter
 	 * @return RouteMap
-	 * @param $Filter
 	 * @throws \Exception
 	 */
-	public function get( $sRoute, $function, $Filter = null )
+	public function get( $sRoute, $function, $Filter = null ) : Routing\RouteMap
 	{
 		return $this->addRoute( $this->_Get, $sRoute, $function, $Filter );
 	}
@@ -95,7 +109,7 @@ class Router extends Memory implements IRunnable
 	 * @param $Filter
 	 * @throws \Exception
 	 */
-	public function post( $sRoute, $function, $Filter = null )
+	public function post( $sRoute, $function, $Filter = null ) : Routing\RouteMap
 	{
 		return $this->addRoute( $this->_Post, $sRoute, $function, $Filter );
 	}
@@ -107,7 +121,7 @@ class Router extends Memory implements IRunnable
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function put( $sRoute, $function, $Filter = null )
+	public function put( $sRoute, $function, $Filter = null ) : Routing\RouteMap
 	{
 		return $this->addRoute( $this->_Put, $sRoute, $function, $Filter );
 	}
@@ -116,7 +130,7 @@ class Router extends Memory implements IRunnable
 	 * @param RouteMap $Route
 	 * @return bool
 	 */
-	protected function isRouteWithParams( RouteMap $Route )
+	protected function isRouteWithParams( RouteMap $Route ) : bool
 	{
 		return strpos( $Route->Path, ':' ) == true;
 	}
@@ -124,10 +138,10 @@ class Router extends Memory implements IRunnable
 	/**
 	 * @param $Route
 	 * @param $sUri
-	 * @return array|bool
+	 * @return array
 	 * @throws \Exception
 	 */
-	protected function processRoute( RouteMap $Route, $sUri )
+	protected function processRoute( RouteMap $Route, $sUri ) : ?array
 	{
 		// Does route have parameters?
 
@@ -155,11 +169,11 @@ class Router extends Memory implements IRunnable
 
 			if( $Route->Path == $sUri )
 			{
-				return true;
+				return [];
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	/**
@@ -252,23 +266,23 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param $sUri
-	 * @param $iMethod
+	 * @param $Uri
+	 * @param $Method
 	 * @return \Routing\RouteMap
 	 * @throws \Exception
 	 */
 
-	public function getRoute( $iMethod, $sUri )
+	public function getRoute( $Method, $Uri )
 	{
-		$aRoutes = $this->getRouteArray( $iMethod );
+		$Routes = $this->getRouteArray( $Method );
 
-		foreach( $aRoutes as $Route )
+		foreach( $Routes as $Route )
 		{
 			if( !$this->isRouteWithParams( $Route ) )
 			{
-				$aParams = $this->processRoute( $Route, $sUri );
+				$Params = $this->processRoute( $Route, $Uri );
 
-				if( $aParams )
+				if( is_array( $Params ) )
 				{
 					$Route->Parameters = null;
 					return $Route;
@@ -276,17 +290,17 @@ class Router extends Memory implements IRunnable
 			}
 		}
 
-		foreach( $aRoutes as $Route )
+		foreach( $Routes as $Route )
 		{
-			$aParams = $this->processRoute( $Route, $sUri );
+			$Params = $this->processRoute( $Route, $Uri );
 
 			if( $this->isRouteWithParams( $Route ) )
 			{
-				if( $aParams )
+				if( $Params )
 				{
-					if( is_array( $aParams ) )
+					if( is_array( $Params ) )
 					{
-						$Route->Parameters = $aParams;
+						$Route->Parameters = $Params;
 					}
 					else
 					{
@@ -297,6 +311,7 @@ class Router extends Memory implements IRunnable
 				}
 			}
 		}
+
 		return null;
 	}
 
@@ -340,7 +355,7 @@ class Router extends Memory implements IRunnable
 	 * @throws \Exception
 	 */
 
-	function run( array $Argv = null )
+	function run( array $Argv = [] )
 	{
 		if( !$Argv || !array_key_exists( 'route', $Argv ) )
 		{

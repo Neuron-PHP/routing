@@ -10,7 +10,8 @@
     }
   ],
   "require": {
-    "neuron-php/patterns": "^0.5.2"
+    "neuron-php/patterns": "^0.5.2",
+    "neuron-php/logging": "^0.5.2"
   },
   "require-dev": {
     "squizlabs/php_codesniffer"     : "2.*",

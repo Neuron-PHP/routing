@@ -4,10 +4,10 @@ namespace Routing;
 
 class Filter
 {
-	private $_PreFn;
-	private $_PostFn;
+	private ?\Closure $_PreFn;
+	private ?\Closure $_PostFn;
 
-	public function __construct( $PreFn, $PostFn = null )
+	public function __construct( ?\Closure $PreFn, ?\Closure $PostFn = null )
 	{
 		$this->_PreFn  = $PreFn;
 		$this->_PostFn = $PostFn;

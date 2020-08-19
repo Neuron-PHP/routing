@@ -1,3 +1,6 @@
+## 0.5.1 2020-08-19
+* Updates to support changes in dependencies.
+
 # Versions
 
 ### 0.3.0
@@ -50,4 +53,3 @@
 ### 0.1.0 2016-08-16
 
 Initial version.
-
