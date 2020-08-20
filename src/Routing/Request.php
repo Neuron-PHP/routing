@@ -1,6 +1,6 @@
 <?php
 
-namespace Routing;
+namespace Neuron\Routing;
 
 use Neuron\Data\Filter\Get;
 use Neuron\Data\Filter\Post;

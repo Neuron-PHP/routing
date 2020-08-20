@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use Neuron\Routing;
 
 class FilterTest extends PHPUnit\Framework\TestCase
 {
@@ -8,7 +9,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 	protected function setUp() : void
 	{
-		$this->Router = new \Routing\Router();
+		$this->Router = new Routing\Router();
 	}
 
 	public function testRoutePreFilter()
@@ -18,8 +19,8 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PreFilter',
-			new \Routing\Filter(
-				function( \Routing\RouteMap $Route ) use ( &$Filter, &$Name )
+			new Routing\Filter(
+				function( Routing\RouteMap $Route ) use ( &$Filter, &$Name )
 				{
 					$Filter = true;
 					$Name = $Route->Path;
@@ -52,7 +53,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PostFilter',
-			new \Routing\Filter(
+			new Routing\Filter(
 				null,
 				function() use ( &$Filter ) { $Filter = true; }
 			)
@@ -80,7 +81,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PreFilter',
-			new \Routing\Filter(
+			new Routing\Filter(
 				function() use ( &$Filter ) { $Filter = true; }
 			)
 		);
@@ -109,7 +110,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->Router->registerFilter(
 			'PostFilter',
-			new \Routing\Filter(
+			new Routing\Filter(
 				null,
 				function() use ( &$Filter ) { $Filter = true; }
 			)
@@ -131,5 +132,4 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->assertTrue( $Filter );
 	}
-
 }

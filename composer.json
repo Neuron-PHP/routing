@@ -20,8 +20,8 @@
     "phpdocumentor/phpdocumentor"   : "2.*"
   },
   "autoload": {
-    "psr-0": {
-      "Routing" : "src"
+    "psr-4": {
+      "Neuron\\" : "src/"
     }
   }
 }
