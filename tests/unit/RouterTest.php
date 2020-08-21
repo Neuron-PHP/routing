@@ -411,4 +411,32 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
 		$this->assertEquals( '1234', $Extra );
 	}
+
+	public function testPayload()
+	{
+		try
+		{
+			$Route = $this->Router->get( "/test", function( $Parameters ){ return $Parameters[ 'Controller' ]; } );
+			$Route->Payload = [ 'Controller' => 'Controller@method' ];
+		}
+		catch( Exception $Exception )
+		{}
+
+		try
+		{
+			$Payload = $this->Router->run(
+				[
+					'route' => '/test',
+					'type'  => 'GET'
+				]
+			);
+
+		}
+		catch( Exception $exception )
+		{
+			$this->fail( $exception->getMessage() );
+		}
+
+		$this->assertEquals( 'Controller@method', $Payload );
+	}
 }
