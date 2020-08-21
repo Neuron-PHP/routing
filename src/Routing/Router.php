@@ -14,19 +14,19 @@ use \Neuron\Patterns\IRunnable;
 
 class Router extends Memory implements IRunnable
 {
-	private array $_Delete = [];
-	private array $_Get    = [];
-	private array $_Post   = [];
-	private array $_Put    = [];
-	private array $_Filter = [];
+	private array $_Delete  = [];
+	private array $_Get     = [];
+	private array $_Post    = [];
+	private array $_Put     = [];
+	private array $_Filter  = [];
 
 	private array $_FilterRegistry = [];
 
 	/**
-	 * @param $Name
+	 * @param string $Name
 	 * @param Filter $Filter
 	 */
-	public function registerFilter( $Name, Filter $Filter )
+	public function registerFilter( string $Name, Filter $Filter )
 	{
 		$this->_FilterRegistry[ $Name ] = $Filter;
 	}
@@ -62,17 +62,17 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param array $aRoutes
-	 * @param $sRoute
+	 * @param array $Routes
+	 * @param string $RouteName
 	 * @param $function
 	 * @param $Filter
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$aRoutes, $sRoute, $function, $Filter ) : RouteMap
+	protected function addRoute( array &$Routes, string $RouteName, $function, $Filter ) : RouteMap
 	{
-		$Route = new RouteMap( $sRoute, $function, $Filter ?? '' );
-		$aRoutes[] = $Route;
+		$Route    = new RouteMap( $RouteName, $function, $Filter ?? '' );
+		$Routes[] = $Route;
 
 		return $Route;
 	}
@@ -84,7 +84,7 @@ class Router extends Memory implements IRunnable
 	 * @param $Filter
 	 * @throws \Exception
 	 */
-	public function delete( $sRoute, $function, $Filter = null )
+	public function delete( $sRoute, $function, $Filter = null ) : RouteMap
 	{
 		return $this->addRoute( $this->_Delete, $sRoute, $function, $Filter );
 	}
@@ -177,59 +177,60 @@ class Router extends Memory implements IRunnable
 
 	/**
 	 * @param RouteMap $Route
-	 * @param $sUri
+	 * @param string $Uri
 	 * @return array
 	 * @throws \Exception
 	 */
-	protected function processRouteWithParameters( RouteMap $Route, $sUri )
+	protected function processRouteWithParameters( RouteMap $Route, string $Uri ) : array
 	{
-		$aDetails = $Route->parseParams();
+		$Details = $Route->parseParams();
 
-		return $this->extractRouteParams( $sUri, $aDetails );
+		return $this->extractRouteParams( $Uri, $Details );
 	}
 
 	/**
 	 * Populates a param array with the data from the uri.
-	 * @param $sUri
-	 * @param $aDetails
+	 * @param $Uri
+	 * @param $Details
 	 * @return array
 	 */
-	protected function extractRouteParams( $sUri, $aDetails )
+	protected function extractRouteParams( $Uri, $Details ) : array
 	{
-		if( $sUri && $sUri[ 0 ]  == '/' )
+		if( $Uri && $Uri[ 0 ]  == '/' )
 		{
-			$String = new StringData( $sUri );
-			$sUri   = $String->right( $String->length() - 1 );
+			$String = new StringData( $Uri );
+			$Uri    = $String->right( $String->length() - 1 );
 		}
 
-		$aUri = explode( '/', $sUri );
+		$UriParts = explode( '/', $Uri );
 
-		$aParams = [];
+		$Params = [];
 		$iOffset = 0;
 
-		foreach( $aUri as $sPart )
+		foreach( $UriParts as $Part )
 		{
-			if( $iOffset >= count( $aDetails ) )
+			if( $iOffset >= count( $Details ) )
 			{
 				return [];
 			}
 
-			$action = $aDetails[ $iOffset ][ 'action' ];
+			$action = $Details[ $iOffset ][ 'action' ];
 			if( $action )
 			{
-				if( $action != $sPart )
+				if( $action != $Part )
 				{
 					return [];
 				}
 			}
 			else
 			{
-				$aParams[ $aDetails[ $iOffset ][ 'param' ] ] = $sPart;
+				$Params[ $Details[ $iOffset ][ 'param' ] ] = $Part;
 			}
 
 			$iOffset++;
 		}
-		return $aParams;
+
+		return $Params;
 	}
 
 	/**
@@ -238,40 +239,40 @@ class Router extends Memory implements IRunnable
 	 * @return array
 	 */
 
-	protected function getRouteArray( $iMethod )
+	protected function getRouteArray( $iMethod ) : array
 	{
-		$aRoutes = [];
+		$Routes = [];
 
 		switch( $iMethod )
 		{
 			case RequestMethod::DELETE:
-				$aRoutes = $this->_Delete;
+				$Routes = $this->_Delete;
 				break;
 
 			case RequestMethod::GET:
-				$aRoutes = $this->_Get;
+				$Routes = $this->_Get;
 				break;
 
 			case RequestMethod::POST:
-				$aRoutes = $this->_Post;
+				$Routes = $this->_Post;
 				break;
 
 			case RequestMethod::PUT:
-				$aRoutes = $this->_Put;
+				$Routes = $this->_Put;
 				break;
 		}
 
-		return $aRoutes;
+		return $Routes;
 	}
 
 	/**
 	 * @param $Uri
 	 * @param $Method
-	 * @return RouteMap
+	 * @return RouteMap|null
 	 * @throws \Exception
 	 */
 
-	public function getRoute( $Method, $Uri )
+	public function getRoute( $Method, $Uri ) : ?RouteMap
 	{
 		$Routes = $this->getRouteArray( $Method );
 
@@ -366,14 +367,14 @@ class Router extends Memory implements IRunnable
 			throw new \Exception( 'Missing method type.' );
 		}
 
-		$sType = '';
+		$Type = '';
 
 		if( array_key_exists( 'type', $Argv ) )
 		{
-			$sType = $Argv[ 'type' ];
+			$Type = $Argv[ 'type' ];
 		}
 
-		$Route = $this->getRoute( RequestMethod::getType( $sType ), $Argv[ 'route' ] );
+		$Route = $this->getRoute( RequestMethod::getType( $Type ), $Argv[ 'route' ] );
 
 		if( !$Route )
 		{
@@ -400,6 +401,8 @@ class Router extends Memory implements IRunnable
 				$Route->Parameters = $Argv[ 'extra' ];
 			}
 		}
+
+		$Route->Parameters = array_merge( $Route->Parameters, $Route->Payload );
 
 		return $this->dispatch( $Route );
 	}

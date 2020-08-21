@@ -47,7 +47,6 @@ class RouteTest extends TestCase
 			$Route->Path,
 			'/post'
 		);
-
 	}
 
 	public function testPut()

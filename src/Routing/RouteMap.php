@@ -8,7 +8,8 @@ class RouteMap
 	public $Function;
 	public array $Parameters;
 	public string $Filter;
-	public $Name;
+	public string $Name;
+	public array $Payload;
 
 	/**
 	 * RouteMap constructor.
@@ -29,6 +30,7 @@ class RouteMap
 		$this->Function   = $Function;
 		$this->Parameters = [];
 		$this->Filter     = $Filter;
+		$this->Payload    = [];
 	}
 
 	/**
@@ -94,7 +96,7 @@ class RouteMap
 	}
 
 	/**
-	 * @param string|null $Filter
+	 * @param string $Filter
 	 * @return RouteMap
 	 */
 	public function setFilter( string $Filter ) : RouteMap
@@ -130,33 +132,33 @@ class RouteMap
 
 	public function parseParams()
 	{
-		$aDetails = [];
+		$Details = [];
 
-		$aParts = explode( '/', $this->Path );
-		array_shift( $aParts );
+		$Parts = explode( '/', $this->Path );
+		array_shift( $Parts );
 
-		foreach( $aParts as $sPart )
+		foreach( $Parts as $Part )
 		{
-			if( substr( $sPart, 0, 1 ) == ':' )
+			if( substr( $Part, 0, 1 ) == ':' )
 			{
-				$Param = substr( $sPart, 1 );
+				$Param = substr( $Part, 1 );
 
-				$this->checkForDuplicateParams( $Param, $aDetails );
+				$this->checkForDuplicateParams( $Param, $Details );
 
-				$aDetails[] = [
+				$Details[] = [
 					'param'  => $Param,
 					'action' => false
 				];
 			}
 			else
 			{
-				$aDetails[] = [
+				$Details[] = [
 					'param'  => false,
-					'action' => $sPart
+					'action' => $Part
 				];
 			}
 		}
-		return $aDetails;
+		return $Details;
 	}
 
 	/**
