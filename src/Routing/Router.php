@@ -378,7 +378,7 @@ class Router extends Memory implements IRunnable
 
 		if( !$Route )
 		{
-			$Route = $this->getRoute( RequestMethod::GET, '404' );
+			$Route = $this->getRoute( RequestMethod::GET, '/404' );
 
 			if( $Route )
 			{

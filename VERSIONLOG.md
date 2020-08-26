@@ -1,4 +1,5 @@
 ## 0.5.4
+* Updated 404 route.
 
 ## 0.5.3 2020-08-21
 * Added Payload to RouteMap to enable passing extra route specific data to the lambda.
