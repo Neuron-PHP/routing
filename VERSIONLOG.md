@@ -1,3 +1,5 @@
+## 0.5.6
+
 ## 0.5.5 2022-03-31
 * Updated logger version.
 
