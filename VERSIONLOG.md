@@ -1,3 +1,6 @@
+## 0.5.5 2022-03-31
+* Updated logger version.
+
 ## 0.5.4
 * Updated 404 route.
 
