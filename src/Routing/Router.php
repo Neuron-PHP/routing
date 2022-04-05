@@ -7,10 +7,6 @@ use Neuron\Patterns\Singleton\Memory;
 
 use \Neuron\Patterns\IRunnable;
 
-/**
- * Class Router
- * @package Notion
- */
 
 class Router extends Memory implements IRunnable
 {

@@ -19,7 +19,7 @@ Install Composer
 
     curl -sS https://getcomposer.org/installer | php
 
-Add the Notion Package
+Add the Routing Package
 
     php composer.phar require neuron-php/routing
 
