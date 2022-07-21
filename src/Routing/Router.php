@@ -7,7 +7,9 @@ use Neuron\Patterns\Singleton\Memory;
 
 use \Neuron\Patterns\IRunnable;
 
-
+/**
+ * Singleton router implementation
+ */
 class Router extends Memory implements IRunnable
 {
 	private array $_Delete  = [];
