@@ -1,3 +1,6 @@
+## 0.5.6 2022-04-04
+* Scheduled release
+
 ## 0.5.5 2022-03-31
 * Updated logger version.
 

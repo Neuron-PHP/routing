@@ -8,10 +8,8 @@ use Neuron\Patterns\Singleton\Memory;
 use \Neuron\Patterns\IRunnable;
 
 /**
- * Class Router
- * @package Notion
+ * Singleton router implementation
  */
-
 class Router extends Memory implements IRunnable
 {
 	private array $_Delete  = [];

@@ -6,6 +6,9 @@ use Neuron\Data\Filter\Get;
 use Neuron\Data\Filter\Post;
 use Neuron\Data\Filter\Server;
 
+/**
+ *
+ */
 class Request
 {
 	private $_RequestMethod;

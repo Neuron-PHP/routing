@@ -2,6 +2,9 @@
 
 namespace Neuron\Routing;
 
+/**
+ * Static wrapper for the Router singleton.
+ */
 class Route
 {
 	public static function delete( string $Route, $Function ) : RouteMap

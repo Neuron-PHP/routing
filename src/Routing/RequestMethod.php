@@ -2,6 +2,9 @@
 
 namespace Neuron\Routing;
 
+/**
+ * Representation of an http request method.
+ */
 class RequestMethod
 {
 	const PUT      = 1;
