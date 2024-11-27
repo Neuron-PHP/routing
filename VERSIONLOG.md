@@ -1,4 +1,8 @@
+## 0.6.2 2024-11-27
+* Updated dependencies.
+
 ## 0.6.1
+* Scheduled release.
 
 ## 0.5.6 2022-04-04
 * Scheduled release
