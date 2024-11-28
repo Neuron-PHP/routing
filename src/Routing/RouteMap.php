@@ -183,7 +183,7 @@ class RouteMap
 	 * @return mixed
 	 * @throws \Exception
 	 */
-	public function execute( Router $Router )
+	public function execute( Router $Router ): mixed
 	{
 		$Filter = null;
 
