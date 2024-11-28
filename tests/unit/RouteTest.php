@@ -1,10 +1,17 @@
 <?php
 
+use Neuron\Log\Log;
 use PHPUnit\Framework\TestCase;
 use Neuron\Routing;
 
 class RouteTest extends TestCase
 {
+	protected function setUp(): void
+	{
+		Log::setRunLevel( \Neuron\Log\ILogger::DEBUG );
+		parent::setUp();
+	}
+
 	public function testDelete()
 	{
 		Routing\Route::delete(
