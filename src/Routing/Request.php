@@ -60,7 +60,7 @@ class Request
 	 * @param $Name
 	 * @return mixed
 	 */
-	public function getUrlParam( $Name )
+	public function getUrlParam( $Name ): mixed
 	{
 		return $this->_Get->filterScalar( $Name );
 	}
@@ -69,7 +69,7 @@ class Request
 	 * @param $Name
 	 * @return mixed
 	 */
-	public function getPostParam( $Name )
+	public function getPostParam( $Name ): mixed
 	{
 		return $this->_Post->filterScalar( $Name );
 	}
@@ -78,7 +78,7 @@ class Request
 	 * @param $Name
 	 * @return mixed
 	 */
-	public function getRequest( $Name )
+	public function getRequest( $Name ): mixed
 	{
 		$Result = $this->get( $Name );
 

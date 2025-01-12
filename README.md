@@ -1,6 +1,9 @@
-# Routing
+[![Build Status](https://app.travis-ci.com/Neuron-PHP/routing.svg?token=F8zCwpT7x7Res7J2N4vF&branch=master)](https://app.travis-ci.com/Neuron-PHP/routing)
+# Neuron-PHP Routing
 
-The neuron router is a lightweight router/dispatcher is the vein of Ruby's Sinatra 
+## Overview
+
+The neuron router is a lightweight router/dispatcher is the vein of Ruby's Sinatra
 or Python's Flask. It allows for a very quick method for creating an app
 using restful routes or to add them to an existing application.
 
@@ -11,21 +14,12 @@ using restful routes or to add them to an existing application.
 
 ## Installation
 
-The best way to install Notion is via [Composer](http://getcomposer.org)
+Install php composer from https://getcomposer.org/
 
-Our package is located [here](https://packagist.org/packages/neuron-php/routing)
+Install the neuron routing component:
 
-Install Composer
+    composer require neuron-php/routing
 
-    curl -sS https://getcomposer.org/installer | php
-
-Add the Routing Package
-
-    php composer.phar require neuron-php/routing
-
-Install Later Updates
-
-    composer.phar update
 
 ## .htaccess
 This example .htaccess file shows how to get and pass the route
@@ -43,7 +37,7 @@ Here is an example of a fully functional application that processes
 several routes including one with a variable.
 
     <?php
-    require_once '../vendor/autoload.php';
+    require_once 'vendor/autoload.php';
     
     Route::get( '/',
             function()
@@ -85,3 +79,7 @@ several routes including one with a variable.
 
 If present, the extra element is merged into the parameters array
 before it is passed to the routes closure.
+
+# More Information
+
+You can read more about the Neuron components at [neuronphp.com](http://neuronphp.com)
