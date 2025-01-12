@@ -2,6 +2,8 @@
 
 namespace Neuron\Routing;
 
+use Exception;
+
 class RouteMap
 {
 	public string $Path;
@@ -16,14 +18,14 @@ class RouteMap
 	 * @param $Path string route path i.e. /part/new or /part/:id
 	 * @param $Function callable the function to call on a matching route.
 	 * @param $Filter string the name of the filter to match with this route.
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 
 	public function __construct( string $Path, callable $Function, string $Filter = '' )
 	{
 		if( !is_callable( $Function ) )
 		{
-			throw new \Exception( 'RouteMap: function not callable.' );
+			throw new Exception( 'RouteMap: function not callable.' );
 		}
 
 		$this->Path       = $Path;
@@ -127,10 +129,10 @@ class RouteMap
 	/**
 	 * Extracts the template array from the route definition.
 	 * @return array
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 
-	public function parseParams()
+	public function parseParams(): array
 	{
 		$Details = [];
 
@@ -167,7 +169,7 @@ class RouteMap
 	 * @throws RouteParamException
 	 */
 
-	protected function checkForDuplicateParams( $Param, $Params )
+	protected function checkForDuplicateParams( $Param, $Params ): void
 	{
 		foreach( $Params as $Current )
 		{
@@ -181,7 +183,7 @@ class RouteMap
 	/**
 	 * @param Router $Router
 	 * @return mixed
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function execute( Router $Router ): mixed
 	{
