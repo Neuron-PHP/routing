@@ -2,7 +2,7 @@
 
 namespace Neuron\Routing;
 
-use Neuron\Data\StringData;
+use Neuron\Data\NString;
 use Neuron\Log\Log;
 use Neuron\Patterns\Singleton\Memory;
 
@@ -197,7 +197,7 @@ class Router extends Memory implements IRunnable
 	{
 		if( $Uri && $Uri[ 0 ]  == '/' )
 		{
-			$String = new StringData( $Uri );
+			$String = new NString( $Uri );
 			$Uri    = $String->right( $String->length() - 1 );
 		}
 
