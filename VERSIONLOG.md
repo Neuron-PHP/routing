@@ -1,9 +1,8 @@
--e ## 0.6.6
+## 0.6.6
+* Update data to 0.7
 
 ## 0.6.5
-
 ## 0.6.4
-
 ## 0.6.3 2024-11-27
 * Updated route signatures.
 * Added logging.
