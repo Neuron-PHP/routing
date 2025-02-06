@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use Neuron\Routing;
 
 class RouterTest extends PHPUnit\Framework\TestCase
@@ -56,7 +55,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 				]
 			);
 		}
-		catch( Routing\RouteParamException $exception )
+		catch( \Neuron\Core\Exceptions\RouteParam $exception )
 		{
 			$Caught = true;
 		}

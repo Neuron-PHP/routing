@@ -2,11 +2,10 @@
 
 namespace Neuron\Routing;
 
-use Neuron\Data\NString;
+use Neuron\Core\NString;
 use Neuron\Log\Log;
+use Neuron\Patterns\IRunnable;
 use Neuron\Patterns\Singleton\Memory;
-
-use \Neuron\Patterns\IRunnable;
 
 /**
  * Singleton router implementation

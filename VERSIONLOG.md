@@ -1,11 +1,11 @@
+## 0.6.7 2025-02-06
 ## 0.6.6 2025-01-27
-* Update data to 0.7
 
 ## 0.6.5
 ## 0.6.4
 ## 0.6.3 2024-11-27
 * Updated route signatures.
-* Added logging.
+* Added logging
 
 ## 0.6.2 2024-11-27
 * Updated dependencies.
