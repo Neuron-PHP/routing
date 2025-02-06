@@ -3,6 +3,7 @@
 namespace Neuron\Routing;
 
 use Exception;
+use Neuron\Core\Exceptions\RouteParam;
 
 class RouteMap
 {
@@ -166,7 +167,7 @@ class RouteMap
 	/**
 	 * @param $Param
 	 * @param $Params
-	 * @throws RouteParamException
+	 * @throws RouteParam
 	 */
 
 	protected function checkForDuplicateParams( $Param, $Params ): void
@@ -175,7 +176,7 @@ class RouteMap
 		{
 			if( $Param == $Current[ 'param' ] )
 			{
-				throw new RouteParamException( "Duplicate parameter '$Param' found for route {$this->Path}'." );
+				throw new RouteParam( "Duplicate parameter '$Param' found for route {$this->Path}'." );
 			}
 		}
 	}
