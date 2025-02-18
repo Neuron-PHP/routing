@@ -1,4 +1,4 @@
-## 0.6.8
+## 0.6.8 2025-02-18
 * Updated components.
 * Refactoring.
 * Improved tests.
