@@ -75,6 +75,22 @@ class RouteTest extends TestCase
 		);
 	}
 
+	public function testMissingMethodType()
+	{
+		Routing\Route::get(
+			'/get/:id',
+			function(){ return 'get'; }
+		)->setName( 'test.get' );
+
+		$this->expectException( \Exception::class );
+
+		$Route = Routing\Router::getInstance()->run(
+			[
+				'route' => '/get/1'
+			]
+		);
+	}
+
 	public function testGet()
 	{
 		Routing\Route::get(
@@ -85,7 +101,7 @@ class RouteTest extends TestCase
 
 		$Route = Routing\Router::getInstance()->getRoute(
 			Routing\RequestMethod::GET,
-			'/get/1'
+			'/get/1/'
 		);
 
 		$this->assertEquals(

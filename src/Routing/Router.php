@@ -30,22 +30,22 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param string $Name
+	 * @param string $routeName
 	 * @return Filter
 	 * @throws \Exception
 	 */
 
-	public function getFilter( string $Name ) : Filter
+	public function getFilter( string $routeName ) : Filter
 	{
 		$Filter = null;
 
-		if( array_key_exists( $Name, $this->_FilterRegistry ) )
+		if( array_key_exists( $routeName, $this->_FilterRegistry ) )
 		{
-			$Filter = $this->_FilterRegistry[ $Name ];
+			$Filter = $this->_FilterRegistry[ $routeName ];
 		}
 		else
 		{
-			throw new \Exception( "Filter $Name not registered." );
+			throw new \Exception( "Filter $routeName not registered." );
 		}
 
 		return $Filter;
@@ -140,6 +140,21 @@ class Router extends Memory implements IRunnable
 	 */
 	protected function processRoute( RouteMap $Route, $Uri ) : ?array
 	{
+		if( !$Uri )
+		{
+			$Uri = '/';
+		}
+		else if( $Uri[ 0 ] != '/' )
+		{
+			$Uri = '/' . $Uri;
+		}
+
+		if( strlen( $Uri ) > 1 && $Uri[ strlen( $Uri ) - 1 ] == "/" )
+		{
+			$string = new NString( $Uri );
+			$Uri    = $string->left( $string->length() - 1 );
+		}
+
 		// Does route have parameters?
 
 		if( $this->isRouteWithParams( $Route ) )
@@ -155,15 +170,6 @@ class Router extends Memory implements IRunnable
 		}
 		else
 		{
-			if( !$Uri )
-			{
-				$Uri = '/';
-			}
-			else if( $Uri[ 0 ] != '/' )
-			{
-				$Uri = '/' . $Uri;
-			}
-
 			if( $Route->Path == $Uri )
 			{
 				return [];
@@ -179,6 +185,7 @@ class Router extends Memory implements IRunnable
 	 * @return array
 	 * @throws \Exception
 	 */
+
 	protected function processRouteWithParameters( RouteMap $Route, string $Uri ) : array
 	{
 		$Details = $Route->parseParams();
@@ -192,9 +199,10 @@ class Router extends Memory implements IRunnable
 	 * @param array $Details
 	 * @return array
 	 */
+
 	protected function extractRouteParams( string $Uri, array $Details ) : array
 	{
-		if( $Uri && $Uri[ 0 ]  == '/' )
+		if( $Uri && $Uri[ 0 ] == '/' )
 		{
 			$String = new NString( $Uri );
 			$Uri    = $String->right( $String->length() - 1 );
@@ -213,12 +221,10 @@ class Router extends Memory implements IRunnable
 			}
 
 			$action = $Details[ $iOffset ][ 'action' ];
-			if( $action )
+
+			if( $action && $action != $Part )
 			{
-				if( $action != $Part )
-				{
-					return [];
-				}
+				return [];
 			}
 			else
 			{
@@ -296,15 +302,7 @@ class Router extends Memory implements IRunnable
 			{
 				if( $Params )
 				{
-					if( is_array( $Params ) )
-					{
-						$Route->Parameters = $Params;
-					}
-					else
-					{
-						$Route->Parameters = [];
-					}
-
+					$Route->Parameters = $Params;
 					return $Route;
 				}
 			}
@@ -374,7 +372,9 @@ class Router extends Memory implements IRunnable
 			$Type = $Argv[ 'type' ];
 		}
 
-		$Route = $this->getRoute( RequestMethod::getType( $Type ), $Argv[ 'route' ] );
+		$Uri = $Argv[ 'route' ];
+
+		$Route = $this->getRoute( RequestMethod::getType( $Type ), $Uri );
 
 		if( !$Route )
 		{
@@ -394,14 +394,7 @@ class Router extends Memory implements IRunnable
 
 		if( array_key_exists( 'extra', $Argv ) )
 		{
-			if( is_array( $Route->Parameters ) )
-			{
-				$Route->Parameters = array_merge( $Route->Parameters, $Argv[ 'extra' ] );
-			}
-			else
-			{
-				$Route->Parameters = $Argv[ 'extra' ];
-			}
+			$Route->Parameters = array_merge( $Route->Parameters, $Argv[ 'extra' ] );
 		}
 
 		$Route->Parameters = array_merge( $Route->Parameters, $Route->Payload );
