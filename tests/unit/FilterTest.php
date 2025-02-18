@@ -32,7 +32,7 @@ class FilterTest extends PHPUnit\Framework\TestCase
 			'/test',
 			function(){},
 			'PreFilter'
-			);
+		);
 
 		$Route = $this->Router->getRoute(
 			Routing\RequestMethod::GET,
@@ -45,6 +45,15 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->assertTrue( $Filter );
 		$this->assertEquals( '/test', $Name );
+	}
+
+	public function testRouteNoFilter()
+	{
+		$Filter = false;
+		$Name = '';
+
+		$this>$this->expectException(\Exception::class);
+		$this->Router->getFilter( 'NoFilter' );
 	}
 
 	public function testRoutePostFilter()
