@@ -1,6 +1,7 @@
 <?php
 
 use Neuron\Log\Log;
+use Neuron\Log\RunLevel;
 use PHPUnit\Framework\TestCase;
 use Neuron\Routing;
 
@@ -8,7 +9,7 @@ class RouteTest extends TestCase
 {
 	protected function setUp(): void
 	{
-		Log::setRunLevel( \Neuron\Log\ILogger::DEBUG );
+		Log::setRunLevel( RunLevel::DEBUG );
 		parent::setUp();
 	}
 
