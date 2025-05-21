@@ -1,3 +1,5 @@
+## 0.6.9 2025-05-21
+
 ## 0.6.8 2025-02-18
 * Updated components.
 * Refactoring.
