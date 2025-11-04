@@ -17,19 +17,23 @@ class Request
 	private $_Get;
 	private $_Post;
 	private $_Server;
+	private ?IIpResolver $_ipResolver;
+	private ?string $_sourceIp = null;
 
 	/**
 	 * Request constructor.
 	 * @param RouteMap $Route
 	 * @param $Method
+	 * @param IIpResolver|null $ipResolver Optional IP resolver
 	 */
-	public function __construct( RouteMap $Route, $Method )
+	public function __construct( RouteMap $Route, $Method, ?IIpResolver $ipResolver = null )
 	{
 		$this->_Get           = new Get();
 		$this->_Post          = new Post();
 		$this->_Server        = new Server();
 		$this->_Route         = $Route;
 		$this->_RequestMethod = $Method;
+		$this->_ipResolver    = $ipResolver;
 	}
 
 	/**
@@ -95,5 +99,23 @@ class Request
 	 */
 	public function getRouteParam( $Name )
 	{
+	}
+
+	/**
+	 * Get the source IP address of the request.
+	 *
+	 * Uses the configured IP resolver to determine the client's IP address,
+	 * falling back to DefaultIpResolver if none is configured.
+	 *
+	 * @return string The client IP address
+	 */
+	public function getSourceIp(): string
+	{
+		if( $this->_sourceIp === null )
+		{
+			$resolver = $this->_ipResolver ?? new DefaultIpResolver();
+			$this->_sourceIp = $resolver->resolve( $_SERVER );
+		}
+		return $this->_sourceIp;
 	}
 }

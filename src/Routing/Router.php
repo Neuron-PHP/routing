@@ -5,10 +5,42 @@ namespace Neuron\Routing;
 use Neuron\Core\NString;
 use Neuron\Log\Log;
 use Neuron\Patterns\IRunnable;
+use Neuron\Patterns\Registry;
 use Neuron\Patterns\Singleton\Memory;
 
 /**
- * Singleton router implementation
+ * Core HTTP routing engine for the Neuron framework.
+ * 
+ * This singleton router manages HTTP request routing, URL pattern matching,
+ * parameter extraction, and filter execution. It provides a centralized system
+ * for mapping HTTP requests to controller actions with support for:
+ * 
+ * - RESTful HTTP methods (GET, POST, PUT, DELETE)
+ * - Dynamic route parameters (e.g., /user/:id)
+ * - Route filters for pre/post processing
+ * - Flexible parameter extraction and validation
+ * - URI normalization and processing
+ * 
+ * The router follows a singleton pattern ensuring consistent routing state
+ * across the entire application lifecycle.
+ * 
+ * @package Neuron\Routing
+ * 
+ * @example
+ * ```php
+ * $router = Router::instance();
+ * 
+ * // Register routes
+ * $router->get('/users', 'UserController@index');
+ * $router->post('/users', 'UserController@create');
+ * $router->get('/users/:id', 'UserController@show');
+ * 
+ * // Register filters
+ * $router->registerFilter('auth', new AuthFilter());
+ * 
+ * // Execute routing
+ * $router->run();
+ * ```
  */
 class Router extends Memory implements IRunnable
 {
@@ -19,6 +51,18 @@ class Router extends Memory implements IRunnable
 	private array $_Filter  = [];
 
 	private array $_FilterRegistry = [];
+	private ?IIpResolver $_ipResolver = null;
+
+	/**
+	 * Set the IP resolver for all requests handled by this router.
+	 *
+	 * @param IIpResolver $resolver The IP resolver to use
+	 * @return void
+	 */
+	public function setIpResolver( IIpResolver $resolver ): void
+	{
+		$this->_ipResolver = $resolver;
+	}
 
 	/**
 	 * @param string $Name
@@ -401,5 +445,103 @@ class Router extends Memory implements IRunnable
 
 		Log::debug( "Dispatching: $Type " . $Argv[ 'route' ] . " using: " . $Route->getPath() );
 		return $this->dispatch( $Route );
+	}
+
+	/**
+	 * Find a route by name across all HTTP methods.
+	 * 
+	 * @param string $name The route name to search for
+	 * @return RouteMap|null The route if found, null otherwise
+	 */
+	public function getRouteByName( string $name ): ?RouteMap
+	{
+		$allRoutes = array_merge(
+			$this->_Get,
+			$this->_Post,
+			$this->_Put,
+			$this->_Delete
+		);
+
+		foreach( $allRoutes as $route )
+		{
+			if( $route->getName() === $name )
+			{
+				return $route;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Generate a URL for a named route with optional parameters.
+	 * 
+	 * @param string $name The route name
+	 * @param array $parameters Parameters to substitute in the route path
+	 * @param bool $absolute Whether to return an absolute URL
+	 * @return string|null The generated URL or null if route not found
+	 */
+	public function generateUrl( string $name, array $parameters = [], bool $absolute = false ): ?string
+	{
+		$route = $this->getRouteByName( $name );
+		
+		if( !$route )
+		{
+			return null;
+		}
+
+		$path = $route->getPath();
+		
+		// Replace route parameters with actual values
+		foreach( $parameters as $key => $value )
+		{
+			$path = str_replace( ':' . $key, $value, $path );
+		}
+
+		// If absolute URL requested, prepend base URL
+		if( $absolute )
+		{
+			$baseUrl = Registry::getInstance()->get( 'Base.Url' );
+			if( $baseUrl )
+			{
+				return rtrim( $baseUrl, '/' ) . $path;
+			}
+		}
+
+		return $path;
+	}
+
+	/**
+	 * Get all routes with their names for debugging/inspection.
+	 * 
+	 * @return array Array of route information
+	 */
+	public function getAllNamedRoutes(): array
+	{
+		$namedRoutes = [];
+		$allRoutes = [
+			'GET' => $this->_Get,
+			'POST' => $this->_Post,
+			'PUT' => $this->_Put,
+			'DELETE' => $this->_Delete
+		];
+
+		foreach( $allRoutes as $method => $routes )
+		{
+			foreach( $routes as $route )
+			{
+				$name = $route->getName();
+				if( $name )
+				{
+					$namedRoutes[] = [
+						'name' => $name,
+						'method' => $method,
+						'path' => $route->getPath()
+					];
+				}
+			}
+		}
+
+		return $namedRoutes;
 	}
 }

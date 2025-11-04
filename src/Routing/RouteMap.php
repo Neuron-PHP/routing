@@ -5,6 +5,38 @@ namespace Neuron\Routing;
 use Exception;
 use Neuron\Core\Exceptions\RouteParam;
 
+/**
+ * Route mapping and parameter extraction for HTTP requests.
+ * 
+ * This class represents a single route definition within the routing system,
+ * handling URL pattern matching, dynamic parameter extraction, and route
+ * execution with integrated filter support.
+ * 
+ * Key responsibilities:
+ * - Parse route templates with dynamic parameters (e.g., /users/:id)
+ * - Extract parameters from incoming URIs that match the route pattern
+ * - Execute the associated callable with extracted parameters
+ * - Integrate with the filter system for pre/post processing
+ * - Handle route-specific parameter validation and type conversion
+ * 
+ * Route patterns support:
+ * - Static segments: /users/profile
+ * - Dynamic parameters: /users/:id, /posts/:slug
+ * - Mixed patterns: /users/:id/posts/:post_id
+ * 
+ * @package Neuron\Routing
+ * 
+ * @example
+ * ```php
+ * // Create a route for user profile
+ * $route = new RouteMap('/users/:id', function($id) {
+ *     return UserController::show($id);
+ * }, 'auth');
+ * 
+ * // Execute with URI /users/123
+ * $result = $route->execute('/users/123');
+ * ```
+ */
 class RouteMap
 {
 	public string $Path;
@@ -33,6 +65,7 @@ class RouteMap
 		$this->Function   = $Function;
 		$this->Parameters = [];
 		$this->Filter     = $Filter;
+		$this->Name       = '';
 		$this->Payload    = [];
 	}
 
