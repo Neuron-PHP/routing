@@ -51,6 +51,18 @@ class Router extends Memory implements IRunnable
 	private array $_Filter  = [];
 
 	private array $_FilterRegistry = [];
+	private ?IIpResolver $_ipResolver = null;
+
+	/**
+	 * Set the IP resolver for all requests handled by this router.
+	 *
+	 * @param IIpResolver $resolver The IP resolver to use
+	 * @return void
+	 */
+	public function setIpResolver( IIpResolver $resolver ): void
+	{
+		$this->_ipResolver = $resolver;
+	}
 
 	/**
 	 * @param string $Name

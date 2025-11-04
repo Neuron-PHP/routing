@@ -1,15 +1,14 @@
-## 0.6.11
-* Added comprehensive rate limiting system with multiple storage backends
-* Added RateLimitFilter for flexible request throttling
-* Added Redis, File, and Memory storage implementations for rate limiting
-* Added configurable rate limiting with environment variable support (flat structure)
-* Added whitelisting and blacklisting support for rate limiting
-* Added automatic rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
-* Added HTTP 429 response formatting with JSON/HTML content negotiation
-* Added comprehensive tests for rate limiting functionality
+* Added comprehensive rate limiting system with multiple storage backends.
+* Added RateLimitFilter for request throttling.
+* Added Redis, File, and Memory storage implementations for rate limiting.
+* Added configurable rate limiting with environment variable support (flat structure).
+* Added whitelisting and blacklisting support for rate limiting.
+* Added automatic rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset).
+* Added HTTP 429 response formatting with JSON/HTML content negotiation.
+* Added comprehensive tests for rate limiting functionality.
+* Added IPResolver.
 
 ## 0.6.10
-
 ## 0.6.9 2025-05-21
 
 ## 0.6.8 2025-02-18
