@@ -1,3 +1,5 @@
+## 0.7.1
+
 * Added comprehensive rate limiting system with multiple storage backends.
 * Added RateLimitFilter for request throttling.
 * Added Redis, File, and Memory storage implementations for rate limiting.
