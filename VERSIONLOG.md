@@ -8,7 +8,7 @@
 * Added comprehensive tests for rate limiting functionality.
 * Added IPResolver.
 
-## 0.6.10
+## 0.6.10 2025-11-04
 ## 0.6.9 2025-05-21
 
 ## 0.6.8 2025-02-18
