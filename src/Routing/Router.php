@@ -355,13 +355,21 @@ class Router extends Memory implements IRunnable
 		return null;
 	}
 
-	protected function executePreFilters( RouteMap $Route ): void
+	protected function executePreFilters( RouteMap $Route ): mixed
 	{
 		foreach( $this->_Filter as $FilterName )
 		{
 			$Filter = $this->getFilter( $FilterName );
-			$Filter->pre( $Route );
+			$Result = $Filter->pre( $Route );
+
+			// If filter returns a non-null value, stop execution and return it
+			if( $Result !== null )
+			{
+				return $Result;
+			}
 		}
+
+		return null;
 	}
 
 	protected function executePostFilters( RouteMap $Route ): void
@@ -380,7 +388,13 @@ class Router extends Memory implements IRunnable
 
 	public function dispatch( RouteMap $Route ): mixed
 	{
-		$this->executePreFilters( $Route );
+		$FilterResult = $this->executePreFilters( $Route );
+
+		// If a filter returned a response, return it immediately without executing the route
+		if( $FilterResult !== null )
+		{
+			return $FilterResult;
+		}
 
 		$Result = $Route->execute( $this );
 
