@@ -1,4 +1,4 @@
-## 0.8.1
+## 0.8.1 2025-11-07
 
 * Added comprehensive rate limiting system with multiple storage backends.
 * Added RateLimitFilter for request throttling.
