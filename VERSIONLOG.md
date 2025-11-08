@@ -1,3 +1,5 @@
+## 0.8.1 2025-11-07
+
 * Added comprehensive rate limiting system with multiple storage backends.
 * Added RateLimitFilter for request throttling.
 * Added Redis, File, and Memory storage implementations for rate limiting.
@@ -8,7 +10,7 @@
 * Added comprehensive tests for rate limiting functionality.
 * Added IPResolver.
 
-## 0.6.10 2025-11-04
+## 0.8.0 2025-11-04
 ## 0.6.9 2025-05-21
 
 ## 0.6.8 2025-02-18
