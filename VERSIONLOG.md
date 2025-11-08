@@ -1,3 +1,5 @@
+## 0.8.2
+
 ## 0.8.1 2025-11-07
 
 * Added comprehensive rate limiting system with multiple storage backends.
