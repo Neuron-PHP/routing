@@ -15,25 +15,25 @@ class RateLimitStorageFactory
 	/**
 	 * Create storage instance from configuration.
 	 *
-	 * @param RateLimitConfig $Config
-	 * @param string $BasePath Base path for file storage
+	 * @param RateLimitConfig $config
+	 * @param string $basePath Base path for file storage
 	 * @return IRateLimitStorage
 	 * @throws Exception
 	 */
-	public static function create( RateLimitConfig $Config, string $BasePath = '' ): IRateLimitStorage
+	public static function create( RateLimitConfig $config, string $basePath = '' ): IRateLimitStorage
 	{
-		$storageType = $Config->getStorage();
+		$storageType = $config->getStorage();
 
 		switch( $storageType )
 		{
 			case 'redis':
-				return self::createRedisStorage( $Config );
+				return self::createRedisStorage( $config );
 
 			case 'file':
-				return self::createFileStorage( $Config, $BasePath );
+				return self::createFileStorage( $config, $basePath );
 
 			case 'memory':
-				return self::createMemoryStorage( $Config );
+				return self::createMemoryStorage( $config );
 
 			default:
 				throw new Exception( "Unknown rate limit storage type: $storageType" );
@@ -43,47 +43,47 @@ class RateLimitStorageFactory
 	/**
 	 * Create Redis storage instance.
 	 *
-	 * @param RateLimitConfig $Config
+	 * @param RateLimitConfig $config
 	 * @return RedisRateLimitStorage
 	 */
-	private static function createRedisStorage( RateLimitConfig $Config ): RedisRateLimitStorage
+	private static function createRedisStorage( RateLimitConfig $config ): RedisRateLimitStorage
 	{
-		return new RedisRateLimitStorage( $Config->getRedisConfig() );
+		return new RedisRateLimitStorage( $config->getRedisConfig() );
 	}
 
 	/**
 	 * Create file storage instance.
 	 *
-	 * @param RateLimitConfig $Config
-	 * @param string $BasePath
+	 * @param RateLimitConfig $config
+	 * @param string $basePath
 	 * @return FileRateLimitStorage
 	 */
-	private static function createFileStorage( RateLimitConfig $Config, string $BasePath ): FileRateLimitStorage
+	private static function createFileStorage( RateLimitConfig $config, string $basePath ): FileRateLimitStorage
 	{
-		$path = $Config->getFilePath();
+		$path = $config->getFilePath();
 
 		// Make path absolute if relative
-		if( !str_starts_with( $path, '/' ) && $BasePath )
+		if( !str_starts_with( $path, '/' ) && $basePath )
 		{
-			$path = $BasePath . '/' . $path;
+			$path = $basePath . '/' . $path;
 		}
 
 		return new FileRateLimitStorage([
 			'path' => $path,
-			'prefix' => $Config->getKeyPrefix()
+			'prefix' => $config->getKeyPrefix()
 		]);
 	}
 
 	/**
 	 * Create memory storage instance.
 	 *
-	 * @param RateLimitConfig $Config
+	 * @param RateLimitConfig $config
 	 * @return MemoryRateLimitStorage
 	 */
-	private static function createMemoryStorage( RateLimitConfig $Config ): MemoryRateLimitStorage
+	private static function createMemoryStorage( RateLimitConfig $config ): MemoryRateLimitStorage
 	{
 		return new MemoryRateLimitStorage([
-			'prefix' => $Config->getKeyPrefix()
+			'prefix' => $config->getKeyPrefix()
 		]);
 	}
 }

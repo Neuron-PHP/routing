@@ -14,30 +14,30 @@ use Neuron\Log\Log;
  */
 class FileRateLimitStorage implements IRateLimitStorage
 {
-	private string $_Path;
-	private string $_Prefix;
-	private float $_GcProbability;
+	private string $_path;
+	private string $_prefix;
+	private float $_gcProbability;
 
 	/**
-	 * @param array $Config Configuration options
+	 * @param array $config Configuration options
 	 */
-	public function __construct( array $Config = [] )
+	public function __construct( array $config = [] )
 	{
-		$this->_Path = $Config['path'] ?? sys_get_temp_dir() . '/rate_limits';
-		$this->_Prefix = $Config['prefix'] ?? 'rl_';
-		$this->_GcProbability = $Config['gc_probability'] ?? 0.01;
+		$this->_path = $config['path'] ?? sys_get_temp_dir() . '/rate_limits';
+		$this->_prefix = $config['prefix'] ?? 'rl_';
+		$this->_gcProbability = $config['gc_probability'] ?? 0.01;
 
 		// Ensure directory exists
-		if( !is_dir( $this->_Path ) )
+		if( !is_dir( $this->_path ) )
 		{
-			if( !mkdir( $this->_Path, 0777, true ) && !is_dir( $this->_Path ) )
+			if( !mkdir( $this->_path, 0777, true ) && !is_dir( $this->_path ) )
 			{
-				Log::error( "Failed to create rate limit directory: {$this->_Path}" );
+				Log::error( "Failed to create rate limit directory: {$this->_path}" );
 			}
 		}
 
 		// Run garbage collection probabilistically
-		if( mt_rand() / mt_getrandmax() < $this->_GcProbability )
+		if( mt_rand() / mt_getrandmax() < $this->_gcProbability )
 		{
 			$this->gc();
 		}
@@ -52,8 +52,8 @@ class FileRateLimitStorage implements IRateLimitStorage
 	private function getFilePath( string $key ): string
 	{
 		// Hash the key to avoid filesystem issues with special characters
-		$hashedKey = md5( $this->_Prefix . $key );
-		return $this->_Path . '/' . $hashedKey . '.rl';
+		$hashedKey = md5( $this->_prefix . $key );
+		return $this->_path . '/' . $hashedKey . '.rl';
 	}
 
 	/**
@@ -224,7 +224,7 @@ class FileRateLimitStorage implements IRateLimitStorage
 	 */
 	public function clear(): void
 	{
-		$files = glob( $this->_Path . '/*.rl' );
+		$files = glob( $this->_path . '/*.rl' );
 		if( $files !== false )
 		{
 			foreach( $files as $file )
@@ -242,7 +242,7 @@ class FileRateLimitStorage implements IRateLimitStorage
 	public function gc(): int
 	{
 		$removed = 0;
-		$files = glob( $this->_Path . '/*.rl' );
+		$files = glob( $this->_path . '/*.rl' );
 
 		if( $files === false )
 		{

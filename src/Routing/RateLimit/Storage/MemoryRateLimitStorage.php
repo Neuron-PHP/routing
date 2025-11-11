@@ -13,15 +13,15 @@ namespace Neuron\Routing\RateLimit\Storage;
  */
 class MemoryRateLimitStorage implements IRateLimitStorage
 {
-	private array $_Storage = [];
-	private string $_Prefix;
+	private array $_storage = [];
+	private string $_prefix;
 
 	/**
-	 * @param array $Config Configuration options
+	 * @param array $config Configuration options
 	 */
-	public function __construct( array $Config = [] )
+	public function __construct( array $config = [] )
 	{
-		$this->_Prefix = $Config['prefix'] ?? 'rl_';
+		$this->_prefix = $config['prefix'] ?? 'rl_';
 	}
 
 	/**
@@ -29,20 +29,20 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	 */
 	public function allow( string $key, int $limit, int $window ): bool
 	{
-		$fullKey = $this->_Prefix . $key;
+		$fullKey = $this->_prefix . $key;
 		$now = time();
 		$windowStart = $now - $window;
 
 		// Initialize or get existing data
-		if( !isset( $this->_Storage[$fullKey] ) )
+		if( !isset( $this->_storage[$fullKey] ) )
 		{
-			$this->_Storage[$fullKey] = [
+			$this->_storage[$fullKey] = [
 				'attempts' => [],
 				'window_start' => $now
 			];
 		}
 
-		$data = &$this->_Storage[$fullKey];
+		$data = &$this->_storage[$fullKey];
 
 		// Remove expired attempts
 		$data['attempts'] = array_filter(
@@ -68,16 +68,16 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	 */
 	public function getRemainingAttempts( string $key, int $limit, int $window ): int
 	{
-		$fullKey = $this->_Prefix . $key;
+		$fullKey = $this->_prefix . $key;
 		$now = time();
 		$windowStart = $now - $window;
 
-		if( !isset( $this->_Storage[$fullKey] ) )
+		if( !isset( $this->_storage[$fullKey] ) )
 		{
 			return $limit;
 		}
 
-		$data = $this->_Storage[$fullKey];
+		$data = $this->_storage[$fullKey];
 
 		// Count non-expired attempts
 		$activeAttempts = array_filter(
@@ -96,15 +96,15 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	 */
 	public function getResetTime( string $key, int $window ): int
 	{
-		$fullKey = $this->_Prefix . $key;
+		$fullKey = $this->_prefix . $key;
 
-		if( !isset( $this->_Storage[$fullKey] ) || empty( $this->_Storage[$fullKey]['attempts'] ) )
+		if( !isset( $this->_storage[$fullKey] ) || empty( $this->_storage[$fullKey]['attempts'] ) )
 		{
 			return time() + $window;
 		}
 
 		// Find the oldest attempt in the current window
-		$oldestAttempt = min( $this->_Storage[$fullKey]['attempts'] );
+		$oldestAttempt = min( $this->_storage[$fullKey]['attempts'] );
 		return $oldestAttempt + $window;
 	}
 
@@ -113,8 +113,8 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	 */
 	public function reset( string $key ): void
 	{
-		$fullKey = $this->_Prefix . $key;
-		unset( $this->_Storage[$fullKey] );
+		$fullKey = $this->_prefix . $key;
+		unset( $this->_storage[$fullKey] );
 	}
 
 	/**
@@ -122,7 +122,7 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	 */
 	public function clear(): void
 	{
-		$this->_Storage = [];
+		$this->_storage = [];
 	}
 
 	/**
@@ -132,6 +132,6 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	 */
 	public function getStorage(): array
 	{
-		return $this->_Storage;
+		return $this->_storage;
 	}
 }

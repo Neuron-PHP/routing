@@ -44,13 +44,13 @@ use Neuron\Patterns\Singleton\Memory;
  */
 class Router extends Memory implements IRunnable
 {
-	private array $_Delete  = [];
-	private array $_Get     = [];
-	private array $_Post    = [];
-	private array $_Put     = [];
-	private array $_Filter  = [];
+	private array $_delete  = [];
+	private array $_get     = [];
+	private array $_post    = [];
+	private array $_put     = [];
+	private array $_filter  = [];
 
-	private array $_FilterRegistry = [];
+	private array $_filterRegistry = [];
 	private ?IIpResolver $_ipResolver = null;
 
 	/**
@@ -65,12 +65,12 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param string $Name
-	 * @param Filter $Filter
+	 * @param string $name
+	 * @param Filter $filter
 	 */
-	public function registerFilter( string $Name, Filter $Filter ): void
+	public function registerFilter( string $name, Filter $filter ): void
 	{
-		$this->_FilterRegistry[ $Name ] = $Filter;
+		$this->_filterRegistry[ $name ] = $filter;
 	}
 
 	/**
@@ -81,140 +81,140 @@ class Router extends Memory implements IRunnable
 
 	public function getFilter( string $routeName ) : Filter
 	{
-		$Filter = null;
+		$filter = null;
 
-		if( array_key_exists( $routeName, $this->_FilterRegistry ) )
+		if( array_key_exists( $routeName, $this->_filterRegistry ) )
 		{
-			$Filter = $this->_FilterRegistry[ $routeName ];
+			$filter = $this->_filterRegistry[ $routeName ];
 		}
 		else
 		{
 			throw new \Exception( "Filter $routeName not registered." );
 		}
 
-		return $Filter;
+		return $filter;
 	}
 
 	/**
-	 * @param string $Filter
+	 * @param string $filter
 	 */
-	public function addFilter( string $Filter ): void
+	public function addFilter( string $filter ): void
 	{
-		$this->_Filter[] = $Filter;
+		$this->_filter[] = $filter;
 	}
 
 	/**
-	 * @param array $Routes
-	 * @param string $RouteName
+	 * @param array $routes
+	 * @param string $routeName
 	 * @param $function
-	 * @param $Filter
+	 * @param $filter
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$Routes, string $RouteName, $function, $Filter ) : RouteMap
+	protected function addRoute( array &$routes, string $routeName, $function, $filter ) : RouteMap
 	{
-		$Route    = new RouteMap( $RouteName, $function, $Filter ?? '' );
-		$Routes[] = $Route;
+		$route    = new RouteMap( $routeName, $function, $filter ?? '' );
+		$routes[] = $route;
 
-		return $Route;
+		return $route;
 	}
 
 	/**
-	 * @param string $Route
+	 * @param string $route
 	 * @param $function
-	 * @param string|null $Filter |null $Filter
+	 * @param string|null $filter |null $filter
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function delete( string $Route, $function, ?string $Filter = null ) : RouteMap
+	public function delete( string $route, $function, ?string $filter = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_Delete, $Route, $function, $Filter );
+		return $this->addRoute( $this->_delete, $route, $function, $filter );
 	}
 
 	/**
-	 * @param string $Route
+	 * @param string $route
 	 * @param $function
-	 * @param string|null $Filter |null $Filter
+	 * @param string|null $filter |null $filter
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function get( string $Route, $function, ?string $Filter = null ) : RouteMap
+	public function get( string $route, $function, ?string $filter = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_Get, $Route, $function, $Filter );
+		return $this->addRoute( $this->_get, $route, $function, $filter );
 	}
 
 	/**
-	 * @param string $Route
+	 * @param string $route
 	 * @param $function
-	 * @param string|null $Filter
+	 * @param string|null $filter
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function post( string $Route, $function, ?string $Filter = null ) : RouteMap
+	public function post( string $route, $function, ?string $filter = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_Post, $Route, $function, $Filter );
+		return $this->addRoute( $this->_post, $route, $function, $filter );
 	}
 
 	/**
-	 * @param string $Route
+	 * @param string $route
 	 * @param $function
-	 * @param string|null $Filter |null $Filter
+	 * @param string|null $filter |null $filter
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function put( string $Route, $function, ?string $Filter = null ) : RouteMap
+	public function put( string $route, $function, ?string $filter = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_Put, $Route, $function, $Filter );
+		return $this->addRoute( $this->_put, $route, $function, $filter );
 	}
 
 	/**
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return bool
 	 */
-	protected function isRouteWithParams( RouteMap $Route ) : bool
+	protected function isRouteWithParams( RouteMap $route ) : bool
 	{
-		return strpos( $Route->Path, ':' ) == true;
+		return strpos( $route->Path, ':' ) == true;
 	}
 
 	/**
-	 * @param RouteMap $Route
-	 * @param $Uri
+	 * @param RouteMap $route
+	 * @param $uri
 	 * @return array|null
 	 * @throws \Exception
 	 */
-	protected function processRoute( RouteMap $Route, $Uri ) : ?array
+	protected function processRoute( RouteMap $route, $uri ) : ?array
 	{
-		if( !$Uri )
+		if( !$uri )
 		{
-			$Uri = '/';
+			$uri = '/';
 		}
-		else if( $Uri[ 0 ] != '/' )
+		else if( $uri[ 0 ] != '/' )
 		{
-			$Uri = '/' . $Uri;
+			$uri = '/' . $uri;
 		}
 
-		if( strlen( $Uri ) > 1 && $Uri[ strlen( $Uri ) - 1 ] == "/" )
+		if( strlen( $uri ) > 1 && $uri[ strlen( $uri ) - 1 ] == "/" )
 		{
-			$string = new NString( $Uri );
-			$Uri    = $string->left( $string->length() - 1 );
+			$string = new NString( $uri );
+			$uri    = $string->left( $string->length() - 1 );
 		}
 
 		// Does route have parameters?
 
-		if( $this->isRouteWithParams( $Route ) )
+		if( $this->isRouteWithParams( $route ) )
 		{
-			$Segments = count( explode( '/', $Uri ) );
+			$segments = count( explode( '/', $uri ) );
 
-			$RouteSegments = count( explode( '/', $Route->Path ) );
+			$routeSegments = count( explode( '/', $route->Path ) );
 
-			if( $Segments == $RouteSegments )
+			if( $segments == $routeSegments )
 			{
-				return $this->processRouteWithParameters( $Route, $Uri );
+				return $this->processRouteWithParameters( $route, $uri );
 			}
 		}
 		else
 		{
-			if( $Route->Path == $Uri )
+			if( $route->Path == $uri )
 			{
 				return [];
 			}
@@ -224,130 +224,130 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * @param RouteMap $Route
-	 * @param string $Uri
+	 * @param RouteMap $route
+	 * @param string $uri
 	 * @return array
 	 * @throws \Exception
 	 */
 
-	protected function processRouteWithParameters( RouteMap $Route, string $Uri ) : array
+	protected function processRouteWithParameters( RouteMap $route, string $uri ) : array
 	{
-		$Details = $Route->parseParams();
+		$details = $route->parseParams();
 
-		return $this->extractRouteParams( $Uri, $Details );
+		return $this->extractRouteParams( $uri, $details );
 	}
 
 	/**
 	 * Populates a param array with the data from the uri.
-	 * @param string $Uri
-	 * @param array $Details
+	 * @param string $uri
+	 * @param array $details
 	 * @return array
 	 */
 
-	protected function extractRouteParams( string $Uri, array $Details ) : array
+	protected function extractRouteParams( string $uri, array $details ) : array
 	{
-		if( $Uri && $Uri[ 0 ] == '/' )
+		if( $uri && $uri[ 0 ] == '/' )
 		{
-			$String = new NString( $Uri );
-			$Uri    = $String->right( $String->length() - 1 );
+			$string = new NString( $uri );
+			$uri    = $string->right( $string->length() - 1 );
 		}
 
-		$UriParts = explode( '/', $Uri );
+		$uriParts = explode( '/', $uri );
 
-		$Params = [];
+		$params = [];
 		$iOffset = 0;
 
-		foreach( $UriParts as $Part )
+		foreach( $uriParts as $part )
 		{
-			if( $iOffset >= count( $Details ) )
+			if( $iOffset >= count( $details ) )
 			{
 				return [];
 			}
 
-			$action = $Details[ $iOffset ][ 'action' ];
+			$action = $details[ $iOffset ][ 'action' ];
 
-			if( $action && $action != $Part )
+			if( $action && $action != $part )
 			{
 				return [];
 			}
 			else
 			{
-				$Params[ $Details[ $iOffset ][ 'param' ] ] = $Part;
+				$params[ $details[ $iOffset ][ 'param' ] ] = $part;
 			}
 
 			$iOffset++;
 		}
 
-		return $Params;
+		return $params;
 	}
 
 	/**
 	 * Returns a list of routes mapped to the current request method.
-	 * @param int $Method
+	 * @param int $method
 	 * @return array
 	 */
 
-	protected function getRouteArray( int $Method ) : array
+	protected function getRouteArray( int $method ) : array
 	{
-		$Routes = [];
+		$routes = [];
 
-		switch( $Method )
+		switch( $method )
 		{
 			case RequestMethod::DELETE:
-				$Routes = $this->_Delete;
+				$routes = $this->_delete;
 				break;
 
 			case RequestMethod::GET:
-				$Routes = $this->_Get;
+				$routes = $this->_get;
 				break;
 
 			case RequestMethod::POST:
-				$Routes = $this->_Post;
+				$routes = $this->_post;
 				break;
 
 			case RequestMethod::PUT:
-				$Routes = $this->_Put;
+				$routes = $this->_put;
 				break;
 		}
 
-		return $Routes;
+		return $routes;
 	}
 
 	/**
-	 * @param int $Method
-	 * @param string $Uri
+	 * @param int $method
+	 * @param string $uri
 	 * @return RouteMap|null
 	 * @throws \Exception
 	 */
 
-	public function getRoute( int $Method, string $Uri ) : ?RouteMap
+	public function getRoute( int $method, string $uri ) : ?RouteMap
 	{
-		$Routes = $this->getRouteArray( $Method );
+		$routes = $this->getRouteArray( $method );
 
-		foreach( $Routes as $Route )
+		foreach( $routes as $route )
 		{
-			if( !$this->isRouteWithParams( $Route ) )
+			if( !$this->isRouteWithParams( $route ) )
 			{
-				$Params = $this->processRoute( $Route, $Uri );
+				$params = $this->processRoute( $route, $uri );
 
-				if( is_array( $Params ) )
+				if( is_array( $params ) )
 				{
-					$Route->Parameters = [];
-					return $Route;
+					$route->Parameters = [];
+					return $route;
 				}
 			}
 		}
 
-		foreach( $Routes as $Route )
+		foreach( $routes as $route )
 		{
-			$Params = $this->processRoute( $Route, $Uri );
+			$params = $this->processRoute( $route, $uri );
 
-			if( $this->isRouteWithParams( $Route ) )
+			if( $this->isRouteWithParams( $route ) )
 			{
-				if( $Params )
+				if( $params )
 				{
-					$Route->Parameters = $Params;
-					return $Route;
+					$route->Parameters = $params;
+					return $route;
 				}
 			}
 		}
@@ -355,93 +355,93 @@ class Router extends Memory implements IRunnable
 		return null;
 	}
 
-	protected function executePreFilters( RouteMap $Route ): mixed
+	protected function executePreFilters( RouteMap $route ): mixed
 	{
-		foreach( $this->_Filter as $FilterName )
+		foreach( $this->_filter as $filterName )
 		{
-			$Filter = $this->getFilter( $FilterName );
-			$Result = $Filter->pre( $Route );
+			$filter = $this->getFilter( $filterName );
+			$result = $filter->pre( $route );
 
 			// If filter returns a non-null value, stop execution and return it
-			if( $Result !== null )
+			if( $result !== null )
 			{
-				return $Result;
+				return $result;
 			}
 		}
 
 		return null;
 	}
 
-	protected function executePostFilters( RouteMap $Route ): void
+	protected function executePostFilters( RouteMap $route ): void
 	{
-		foreach( $this->_Filter as $FilterName )
+		foreach( $this->_filter as $filterName )
 		{
-			$Filter = $this->getFilter( $FilterName );
-			$Filter->post( $Route );
+			$filter = $this->getFilter( $filterName );
+			$filter->post( $route );
 		}
 	}
 
 	/**
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return mixed
 	 */
 
-	public function dispatch( RouteMap $Route ): mixed
+	public function dispatch( RouteMap $route ): mixed
 	{
-		$FilterResult = $this->executePreFilters( $Route );
+		$filterResult = $this->executePreFilters( $route );
 
 		// If a filter returned a response, return it immediately without executing the route
-		if( $FilterResult !== null )
+		if( $filterResult !== null )
 		{
-			return $FilterResult;
+			return $filterResult;
 		}
 
-		$Result = $Route->execute( $this );
+		$result = $route->execute( $this );
 
-		$this->executePostFilters( $Route );
+		$this->executePostFilters( $route );
 
-		return $Result;
+		return $result;
 	}
 
 	/**
-	 * @param array $Argv
+	 * @param array $argv
 	 * @return mixed result of route lambda.
 	 * @throws \Exception
 	 */
 
-	function run( array $Argv = [] ) : mixed
+	function run( array $argv = [] ) : mixed
 	{
-		if( !$Argv || !array_key_exists( 'route', $Argv ) )
+		if( !$argv || !array_key_exists( 'route', $argv ) )
 		{
 			Log::error( "Missing route." );
 			throw new \Exception( 'Missing route.' );
 		}
 
-		if( !$Argv || !array_key_exists( 'type', $Argv ) )
+		if( !$argv || !array_key_exists( 'type', $argv ) )
 		{
 			Log::error( "Missing method type." );
 			throw new \Exception( 'Missing method type.' );
 		}
 
-		$Type = '';
+		$type = '';
 
-		if( array_key_exists( 'type', $Argv ) )
+		if( array_key_exists( 'type', $argv ) )
 		{
-			$Type = $Argv[ 'type' ];
+			$type = $argv[ 'type' ];
 		}
 
-		$Uri = $Argv[ 'route' ];
+		$uri = $argv[ 'route' ];
 
-		$Route = $this->getRoute( RequestMethod::getType( $Type ), $Uri );
+		$route = $this->getRoute( RequestMethod::getType( $type ), $uri );
 
-		if( !$Route )
+		if( !$route )
 		{
-			Log::warning( "No route for: " . $Argv[ 'route' ] );
-			$Route = $this->getRoute( RequestMethod::GET, '/404' );
+			Log::warning( "No route for: " . $argv[ 'route' ] );
+			$route = $this->getRoute( RequestMethod::GET, '/404' );
 
-			if( $Route )
+			if( $route )
 			{
-				$Route->Parameters = $Argv;
+				$route->Parameters = $argv;
 			}
 			else
 			{
@@ -450,30 +450,30 @@ class Router extends Memory implements IRunnable
 			}
 		}
 
-		if( array_key_exists( 'extra', $Argv ) )
+		if( array_key_exists( 'extra', $argv ) )
 		{
-			$Route->Parameters = array_merge( $Route->Parameters, $Argv[ 'extra' ] );
+			$route->Parameters = array_merge( $route->Parameters, $argv[ 'extra' ] );
 		}
 
-		$Route->Parameters = array_merge( $Route->Parameters, $Route->Payload );
+		$route->Parameters = array_merge( $route->Parameters, $route->Payload );
 
-		Log::debug( "Dispatching: $Type " . $Argv[ 'route' ] . " using: " . $Route->getPath() );
-		return $this->dispatch( $Route );
+		Log::debug( "Dispatching: $type " . $argv[ 'route' ] . " using: " . $route->getPath() );
+		return $this->dispatch( $route );
 	}
 
 	/**
 	 * Find a route by name across all HTTP methods.
-	 * 
+	 *
 	 * @param string $name The route name to search for
 	 * @return RouteMap|null The route if found, null otherwise
 	 */
 	public function getRouteByName( string $name ): ?RouteMap
 	{
 		$allRoutes = array_merge(
-			$this->_Get,
-			$this->_Post,
-			$this->_Put,
-			$this->_Delete
+			$this->_get,
+			$this->_post,
+			$this->_put,
+			$this->_delete
 		);
 
 		foreach( $allRoutes as $route )
@@ -527,17 +527,17 @@ class Router extends Memory implements IRunnable
 
 	/**
 	 * Get all routes with their names for debugging/inspection.
-	 * 
+	 *
 	 * @return array Array of route information
 	 */
 	public function getAllNamedRoutes(): array
 	{
 		$namedRoutes = [];
 		$allRoutes = [
-			'GET' => $this->_Get,
-			'POST' => $this->_Post,
-			'PUT' => $this->_Put,
-			'DELETE' => $this->_Delete
+			'GET' => $this->_get,
+			'POST' => $this->_post,
+			'PUT' => $this->_put,
+			'DELETE' => $this->_delete
 		];
 
 		foreach( $allRoutes as $method => $routes )

@@ -48,23 +48,23 @@ class RouteMap
 
 	/**
 	 * RouteMap constructor.
-	 * @param $Path string route path i.e. /part/new or /part/:id
-	 * @param $Function callable the function to call on a matching route.
-	 * @param $Filter string the name of the filter to match with this route.
+	 * @param $path string route path i.e. /part/new or /part/:id
+	 * @param $function callable the function to call on a matching route.
+	 * @param $filter string the name of the filter to match with this route.
 	 * @throws Exception
 	 */
 
-	public function __construct( string $Path, callable $Function, string $Filter = '' )
+	public function __construct( string $path, callable $function, string $filter = '' )
 	{
-		if( !is_callable( $Function ) )
+		if( !is_callable( $function ) )
 		{
 			throw new Exception( 'RouteMap: function not callable.' );
 		}
 
-		$this->Path       = $Path;
-		$this->Function   = $Function;
+		$this->Path       = $path;
+		$this->Function   = $function;
 		$this->Parameters = [];
-		$this->Filter     = $Filter;
+		$this->Filter     = $filter;
 		$this->Name       = '';
 		$this->Payload    = [];
 	}
@@ -78,12 +78,12 @@ class RouteMap
 	}
 
 	/**
-	 * @param string $Path
+	 * @param string $path
 	 * @return RouteMap
 	 */
-	public function setPath( string $Path ) : RouteMap
+	public function setPath( string $path ) : RouteMap
 	{
-		$this->Path = $Path;
+		$this->Path = $path;
 		return $this;
 	}
 
@@ -96,12 +96,12 @@ class RouteMap
 	}
 
 	/**
-	 * @param callable $Function
+	 * @param callable $function
 	 * @return RouteMap
 	 */
-	public function setFunction( callable $Function ) : RouteMap
+	public function setFunction( callable $function ) : RouteMap
 	{
-		$this->Function = $Function;
+		$this->Function = $function;
 		return $this;
 	}
 
@@ -114,12 +114,12 @@ class RouteMap
 	}
 
 	/**
-	 * @param array $Parameters
+	 * @param array $parameters
 	 * @return RouteMap
 	 */
-	public function setParameters( array $Parameters ) : RouteMap
+	public function setParameters( array $parameters ) : RouteMap
 	{
-		$this->Parameters = $Parameters;
+		$this->Parameters = $parameters;
 		return $this;
 	}
 
@@ -132,12 +132,12 @@ class RouteMap
 	}
 
 	/**
-	 * @param string $Filter
+	 * @param string $filter
 	 * @return RouteMap
 	 */
-	public function setFilter( string $Filter ) : RouteMap
+	public function setFilter( string $filter ) : RouteMap
 	{
-		$this->Filter = $Filter;
+		$this->Filter = $filter;
 		return $this;
 	}
 
@@ -150,12 +150,12 @@ class RouteMap
 	}
 
 	/**
-	 * @param mixed $Name
+	 * @param mixed $name
 	 * @return RouteMap
 	 */
-	public function setName( $Name ) : RouteMap
+	public function setName( $name ) : RouteMap
 	{
-		$this->Name = $Name;
+		$this->Name = $name;
 		return $this;
 	}
 
@@ -168,80 +168,80 @@ class RouteMap
 
 	public function parseParams(): array
 	{
-		$Details = [];
+		$details = [];
 
-		$Parts = explode( '/', $this->Path );
-		array_shift( $Parts );
+		$parts = explode( '/', $this->Path );
+		array_shift( $parts );
 
-		foreach( $Parts as $Part )
+		foreach( $parts as $part )
 		{
-			if( substr( $Part, 0, 1 ) == ':' )
+			if( substr( $part, 0, 1 ) == ':' )
 			{
-				$Param = substr( $Part, 1 );
+				$param = substr( $part, 1 );
 
-				$this->checkForDuplicateParams( $Param, $Details );
+				$this->checkForDuplicateParams( $param, $details );
 
-				$Details[] = [
-					'param'  => $Param,
+				$details[] = [
+					'param'  => $param,
 					'action' => false
 				];
 			}
 			else
 			{
-				$Details[] = [
+				$details[] = [
 					'param'  => false,
-					'action' => $Part
+					'action' => $part
 				];
 			}
 		}
-		return $Details;
+		return $details;
 	}
 
 	/**
-	 * @param $Param
-	 * @param $Params
+	 * @param $param
+	 * @param $params
 	 * @throws RouteParam
 	 */
 
-	protected function checkForDuplicateParams( $Param, $Params ): void
+	protected function checkForDuplicateParams( $param, $params ): void
 	{
-		foreach( $Params as $Current )
+		foreach( $params as $current )
 		{
-			if( $Param == $Current[ 'param' ] )
+			if( $param == $current[ 'param' ] )
 			{
-				throw new RouteParam( "Duplicate parameter '$Param' found for route {$this->Path}'." );
+				throw new RouteParam( "Duplicate parameter '$param' found for route {$this->Path}'." );
 			}
 		}
 	}
 
 	/**
-	 * @param Router $Router
+	 * @param Router $router
 	 * @return mixed
 	 * @throws Exception
 	 */
-	public function execute( Router $Router ): mixed
+	public function execute( Router $router ): mixed
 	{
-		$Filter = null;
+		$filter = null;
 
 		if( $this->Filter )
 		{
-			$Filter = $Router->getFilter( $this->Filter );
+			$filter = $router->getFilter( $this->Filter );
 		}
 
-		if( $Filter )
+		if( $filter )
 		{
-			$Filter->pre( $this );
+			$filter->pre( $this );
 		}
 
-		$Function = $this->Function;
+		$function = $this->Function;
 
-		$Result = $Function( $this->Parameters );
+		$result = $function( $this->Parameters );
 
-		if( $Filter )
+		if( $filter )
 		{
-			$Filter->post( $this );
+			$filter->post( $this );
 		}
 
-		return $Result;
+		return $result;
 	}
 }
