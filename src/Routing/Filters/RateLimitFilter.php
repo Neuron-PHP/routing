@@ -21,39 +21,39 @@ use Neuron\Log\Log;
  */
 class RateLimitFilter extends Filter
 {
-	private IRateLimitStorage $_Storage;
-	private RateLimitConfig $_Config;
-	private string $_KeyStrategy;
-	private array $_Whitelist;
-	private array $_Blacklist;
+	private IRateLimitStorage $_storage;
+	private RateLimitConfig $_config;
+	private string $_keyStrategy;
+	private array $_whitelist;
+	private array $_blacklist;
 
 	/**
-	 * @param RateLimitConfig $Config Rate limit configuration
-	 * @param string $KeyStrategy Key generation strategy ('ip', 'user', 'route', 'custom')
-	 * @param array $Whitelist IP addresses or user IDs to exempt from rate limiting
-	 * @param array $Blacklist IP addresses or user IDs to apply stricter limits
+	 * @param RateLimitConfig $config Rate limit configuration
+	 * @param string $keyStrategy Key generation strategy ('ip', 'user', 'route', 'custom')
+	 * @param array $whitelist IP addresses or user IDs to exempt from rate limiting
+	 * @param array $blacklist IP addresses or user IDs to apply stricter limits
 	 */
 	public function __construct(
-		RateLimitConfig $Config,
-		string $KeyStrategy = 'ip',
-		array $Whitelist = [],
-		array $Blacklist = []
+		RateLimitConfig $config,
+		string $keyStrategy = 'ip',
+		array $whitelist = [],
+		array $blacklist = []
 	)
 	{
-		$this->_Config = $Config;
-		$this->_KeyStrategy = $KeyStrategy;
-		$this->_Whitelist = $Whitelist;
-		$this->_Blacklist = $Blacklist;
+		$this->_config = $config;
+		$this->_keyStrategy = $keyStrategy;
+		$this->_whitelist = $whitelist;
+		$this->_blacklist = $blacklist;
 
 		// Get base path from registry if available
 		$basePath = Registry::getInstance()->get( 'BasePath' ) ?? '';
 
 		// Create storage instance
-		$this->_Storage = RateLimitStorageFactory::create( $Config, $basePath );
+		$this->_storage = RateLimitStorageFactory::create( $config, $basePath );
 
 		// Set up filter callbacks
 		parent::__construct(
-			function( RouteMap $Route ) { $this->checkRateLimit( $Route ); },
+			function( RouteMap $route ) { $this->checkRateLimit( $route ); },
 			null
 		);
 	}
@@ -61,19 +61,19 @@ class RateLimitFilter extends Filter
 	/**
 	 * Check rate limit for the current request.
 	 *
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return void
 	 */
-	protected function checkRateLimit( RouteMap $Route ): void
+	protected function checkRateLimit( RouteMap $route ): void
 	{
 		// Skip if rate limiting is disabled
-		if( !$this->_Config->isEnabled() )
+		if( !$this->_config->isEnabled() )
 		{
 			return;
 		}
 
 		// Generate key for this request
-		$key = $this->generateKey( $Route );
+		$key = $this->generateKey( $route );
 
 		// Check whitelist
 		if( $this->isWhitelisted( $key ) )
@@ -87,11 +87,11 @@ class RateLimitFilter extends Filter
 		$window = $this->getWindow( $key );
 
 		// Check if request is allowed
-		if( !$this->_Storage->allow( $key, $limit, $window ) )
+		if( !$this->_storage->allow( $key, $limit, $window ) )
 		{
 			// Get rate limit info
-			$remaining = $this->_Storage->getRemainingAttempts( $key, $limit, $window );
-			$resetTime = $this->_Storage->getResetTime( $key, $window );
+			$remaining = $this->_storage->getRemainingAttempts( $key, $limit, $window );
+			$resetTime = $this->_storage->getResetTime( $key, $window );
 
 			Log::warning( "Rate limit exceeded for key: $key" );
 
@@ -107,12 +107,12 @@ class RateLimitFilter extends Filter
 	/**
 	 * Generate a unique key for rate limiting.
 	 *
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return string
 	 */
-	protected function generateKey( RouteMap $Route ): string
+	protected function generateKey( RouteMap $route ): string
 	{
-		switch( $this->_KeyStrategy )
+		switch( $this->_keyStrategy )
 		{
 			case 'ip':
 				return $this->getClientIp();
@@ -121,10 +121,10 @@ class RateLimitFilter extends Filter
 				return $this->getUserId();
 
 			case 'route':
-				return $this->getClientIp() . ':' . $Route->getPath();
+				return $this->getClientIp() . ':' . $route->getPath();
 
 			case 'custom':
-				return $this->getCustomKey( $Route );
+				return $this->getCustomKey( $route );
 
 			default:
 				return $this->getClientIp();
@@ -175,10 +175,10 @@ class RateLimitFilter extends Filter
 	/**
 	 * Get custom key for rate limiting.
 	 *
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return string
 	 */
-	protected function getCustomKey( RouteMap $Route ): string
+	protected function getCustomKey( RouteMap $route ): string
 	{
 		// Override this method in subclasses for custom key generation
 		return $this->getClientIp();
@@ -192,7 +192,7 @@ class RateLimitFilter extends Filter
 	 */
 	protected function isWhitelisted( string $key ): bool
 	{
-		return in_array( $key, $this->_Whitelist, true );
+		return in_array( $key, $this->_whitelist, true );
 	}
 
 	/**
@@ -203,7 +203,7 @@ class RateLimitFilter extends Filter
 	 */
 	protected function isBlacklisted( string $key ): bool
 	{
-		return in_array( $key, $this->_Blacklist, true );
+		return in_array( $key, $this->_blacklist, true );
 	}
 
 	/**
@@ -217,10 +217,10 @@ class RateLimitFilter extends Filter
 		// Apply stricter limit for blacklisted keys
 		if( $this->isBlacklisted( $key ) )
 		{
-			return max( 1, (int) ($this->_Config->getLimit() / 10) );
+			return max( 1, (int) ($this->_config->getLimit() / 10) );
 		}
 
-		return $this->_Config->getLimit();
+		return $this->_config->getLimit();
 	}
 
 	/**
@@ -232,7 +232,7 @@ class RateLimitFilter extends Filter
 	protected function getWindow( string $key ): int
 	{
 		// Could be customized per key if needed
-		return $this->_Config->getWindow();
+		return $this->_config->getWindow();
 	}
 
 	/**
@@ -245,8 +245,8 @@ class RateLimitFilter extends Filter
 	 */
 	protected function addRateLimitHeaders( string $key, int $limit, int $window ): void
 	{
-		$remaining = $this->_Storage->getRemainingAttempts( $key, $limit, $window );
-		$resetTime = $this->_Storage->getResetTime( $key, $window );
+		$remaining = $this->_storage->getRemainingAttempts( $key, $limit, $window );
+		$resetTime = $this->_storage->getResetTime( $key, $window );
 
 		header( 'X-RateLimit-Limit: ' . $limit );
 		header( 'X-RateLimit-Remaining: ' . max( 0, $remaining ) );
@@ -260,7 +260,7 @@ class RateLimitFilter extends Filter
 	 */
 	public function getStorage(): IRateLimitStorage
 	{
-		return $this->_Storage;
+		return $this->_storage;
 	}
 
 	/**
@@ -271,7 +271,7 @@ class RateLimitFilter extends Filter
 	 */
 	public function reset( string $key ): void
 	{
-		$this->_Storage->reset( $key );
+		$this->_storage->reset( $key );
 	}
 
 	/**
@@ -281,6 +281,6 @@ class RateLimitFilter extends Filter
 	 */
 	public function clear(): void
 	{
-		$this->_Storage->clear();
+		$this->_storage->clear();
 	}
 }

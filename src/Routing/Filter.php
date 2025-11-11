@@ -7,48 +7,48 @@ namespace Neuron\Routing;
  */
 class Filter
 {
-	private ?\Closure $_PreFn;
-	private ?\Closure $_PostFn;
+	private ?\Closure $_preFn;
+	private ?\Closure $_postFn;
 
 	/**
-	 * @param \Closure|null $PreFn
-	 * @param \Closure|null $PostFn
+	 * @param \Closure|null $preFn
+	 * @param \Closure|null $postFn
 	 */
-	public function __construct( ?\Closure $PreFn, ?\Closure $PostFn = null )
+	public function __construct( ?\Closure $preFn, ?\Closure $postFn = null )
 	{
-		$this->_PreFn  = $PreFn;
-		$this->_PostFn = $PostFn;
+		$this->_preFn  = $preFn;
+		$this->_postFn = $postFn;
 	}
 
 	/**
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return mixed|null
 	 */
-	public function pre( RouteMap $Route )
+	public function pre( RouteMap $route )
 	{
-		if( !$this->_PreFn )
+		if( !$this->_preFn )
 		{
 			return null;
 		}
 
-		$Function = $this->_PreFn;
+		$function = $this->_preFn;
 
-		return $Function( $Route );
+		return $function( $route );
 	}
 
 	/**
-	 * @param RouteMap $Route
+	 * @param RouteMap $route
 	 * @return mixed|null
 	 */
-	public function post( RouteMap $Route )
+	public function post( RouteMap $route )
 	{
-		if( !$this->_PostFn )
+		if( !$this->_postFn )
 		{
 			return null;
 		}
 
-		$Function = $this->_PostFn;
+		$function = $this->_postFn;
 
-		return $Function( $Route );
+		return $function( $route );
 	}
 }

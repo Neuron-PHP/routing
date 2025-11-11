@@ -10,55 +10,55 @@ class Route
 	/**
 	 * @throws \Exception
 	 */
-	public static function delete( string $Route, $Function ) : RouteMap
+	public static function delete( string $route, $function ) : RouteMap
 	{
-		/** @var Router $Router */
-		$Router = Router::getInstance();
+		/** @var Router $router */
+		$router = Router::getInstance();
 
-		return $Router->delete( $Route, $Function );
+		return $router->delete( $route, $function );
 	}
 
 	/**
 	 * @throws \Exception
 	 */
-	public static function get( string $Route, $Function ) : RouteMap
+	public static function get( string $route, $function ) : RouteMap
 	{
-		/** @var Router $Router */
-		$Router = Router::getInstance();
+		/** @var Router $router */
+		$router = Router::getInstance();
 
-		return $Router->get( $Route, $Function );
+		return $router->get( $route, $function );
 	}
 
 	/**
 	 * @throws \Exception
 	 */
-	public static function post( string $Route, $Function ) : RouteMap
+	public static function post( string $route, $function ) : RouteMap
 	{
-		/** @var Router $Router */
-		$Router = Router::getInstance();
+		/** @var Router $router */
+		$router = Router::getInstance();
 
-		return $Router->post( $Route, $Function );
+		return $router->post( $route, $function );
 	}
 
 	/**
 	 * @throws \Exception
 	 */
-	public static function put( string $Route, $Function ) : RouteMap
+	public static function put( string $route, $function ) : RouteMap
 	{
-		/** @var Router $Router */
-		$Router = Router::getInstance();
+		/** @var Router $router */
+		$router = Router::getInstance();
 
-		return $Router->put( $Route, $Function );
+		return $router->put( $route, $function );
 	}
 
 	/**
 	 * @throws \Exception
 	 */
-	public static function dispatch( array $Params )
+	public static function dispatch( array $params )
 	{
-		/** @var Router $Router */
-		$Router = Router::getInstance();
+		/** @var Router $router */
+		$router = Router::getInstance();
 
-		return $Router->run( $Params );
+		return $router->run( $params );
 	}
 }

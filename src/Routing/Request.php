@@ -11,28 +11,28 @@ use Neuron\Data\Filter\Server;
  */
 class Request
 {
-	private $_RequestMethod;
-	private $_Path;
-	private $_Route;
-	private $_Get;
-	private $_Post;
-	private $_Server;
+	private $_requestMethod;
+	private $_path;
+	private $_route;
+	private $_get;
+	private $_post;
+	private $_server;
 	private ?IIpResolver $_ipResolver;
 	private ?string $_sourceIp = null;
 
 	/**
 	 * Request constructor.
-	 * @param RouteMap $Route
-	 * @param $Method
+	 * @param RouteMap $route
+	 * @param $method
 	 * @param IIpResolver|null $ipResolver Optional IP resolver
 	 */
-	public function __construct( RouteMap $Route, $Method, ?IIpResolver $ipResolver = null )
+	public function __construct( RouteMap $route, $method, ?IIpResolver $ipResolver = null )
 	{
-		$this->_Get           = new Get();
-		$this->_Post          = new Post();
-		$this->_Server        = new Server();
-		$this->_Route         = $Route;
-		$this->_RequestMethod = $Method;
+		$this->_get           = new Get();
+		$this->_post          = new Post();
+		$this->_server        = new Server();
+		$this->_route         = $route;
+		$this->_requestMethod = $method;
 		$this->_ipResolver    = $ipResolver;
 	}
 
@@ -41,7 +41,7 @@ class Request
 	 */
 	public function getMethod()
 	{
-		return $this->_RequestMethod;
+		return $this->_requestMethod;
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Request
 	 */
 	public function getPath()
 	{
-		return $this->_Path;
+		return $this->_path;
 	}
 
 	/**
@@ -57,47 +57,47 @@ class Request
 	 */
 	public function getRoute()
 	{
-		return $this->_Route;
+		return $this->_route;
 	}
 
 	/**
-	 * @param $Name
+	 * @param $name
 	 * @return mixed
 	 */
-	public function getUrlParam( $Name ): mixed
+	public function getUrlParam( $name ): mixed
 	{
-		return $this->_Get->filterScalar( $Name );
+		return $this->_get->filterScalar( $name );
 	}
 
 	/**
-	 * @param $Name
+	 * @param $name
 	 * @return mixed
 	 */
-	public function getPostParam( $Name ): mixed
+	public function getPostParam( $name ): mixed
 	{
-		return $this->_Post->filterScalar( $Name );
+		return $this->_post->filterScalar( $name );
 	}
 
 	/**
-	 * @param $Name
+	 * @param $name
 	 * @return mixed
 	 */
-	public function getRequest( $Name ): mixed
+	public function getRequest( $name ): mixed
 	{
-		$Result = $this->get( $Name );
+		$result = $this->get( $name );
 
-		if( !$Result )
+		if( !$result )
 		{
-			$Result = $this->post( $Name );
+			$result = $this->post( $name );
 		}
 
-		return $Result;
+		return $result;
 	}
 
 	/**
-	 * @param $Name
+	 * @param $name
 	 */
-	public function getRouteParam( $Name )
+	public function getRouteParam( $name )
 	{
 	}
 

@@ -14,14 +14,14 @@ use Neuron\Data\Setting\Source\ISettingSource;
  */
 class RateLimitConfig
 {
-	private array $_Settings;
+	private array $_settings;
 
 	/**
-	 * @param array $Settings Configuration settings
+	 * @param array $settings Configuration settings
 	 */
-	public function __construct( array $Settings = [] )
+	public function __construct( array $settings = [] )
 	{
-		$this->_Settings = array_merge([
+		$this->_settings = array_merge([
 			'enabled' => false,
 			'storage' => 'memory',
 			'requests' => 100,
@@ -36,36 +36,36 @@ class RateLimitConfig
 			'file_path' => 'cache/rate_limits',
 			'key_prefix' => 'rl_',
 			'burst_size' => 0
-		], $Settings);
+		], $settings);
 	}
 
 	/**
 	 * Create configuration from settings source.
 	 *
-	 * @param ISettingSource $Source
-	 * @param string $Category Category to read settings from (default: 'rate_limit')
+	 * @param ISettingSource $source
+	 * @param string $category Category to read settings from (default: 'rate_limit')
 	 * @return self
 	 */
-	public static function fromSettings( ISettingSource $Source, string $Category = 'rate_limit' ): self
+	public static function fromSettings( ISettingSource $source, string $category = 'rate_limit' ): self
 	{
-		$Settings = [
-			'enabled' => $Source->get( $Category, 'enabled' ) ?? false,
-			'storage' => $Source->get( $Category, 'storage' ) ?? 'memory',
-			'requests' => (int) ($Source->get( $Category, 'requests' ) ?? 100),
-			'window' => (int) ($Source->get( $Category, 'window' ) ?? 3600),
-			'redis_host' => $Source->get( $Category, 'redis_host' ) ?? '127.0.0.1',
-			'redis_port' => (int) ($Source->get( $Category, 'redis_port' ) ?? 6379),
-			'redis_database' => (int) ($Source->get( $Category, 'redis_database' ) ?? 0),
-			'redis_prefix' => $Source->get( $Category, 'redis_prefix' ) ?? 'rate_limit_',
-			'redis_timeout' => (float) ($Source->get( $Category, 'redis_timeout' ) ?? 2.0),
-			'redis_auth' => $Source->get( $Category, 'redis_auth' ),
-			'redis_persistent' => (bool) ($Source->get( $Category, 'redis_persistent' ) ?? false),
-			'file_path' => $Source->get( $Category, 'file_path' ) ?? 'cache/rate_limits',
-			'key_prefix' => $Source->get( $Category, 'key_prefix' ) ?? 'rl_',
-			'burst_size' => (int) ($Source->get( $Category, 'burst_size' ) ?? 0)
+		$settings = [
+			'enabled' => $source->get( $category, 'enabled' ) ?? false,
+			'storage' => $source->get( $category, 'storage' ) ?? 'memory',
+			'requests' => (int) ($source->get( $category, 'requests' ) ?? 100),
+			'window' => (int) ($source->get( $category, 'window' ) ?? 3600),
+			'redis_host' => $source->get( $category, 'redis_host' ) ?? '127.0.0.1',
+			'redis_port' => (int) ($source->get( $category, 'redis_port' ) ?? 6379),
+			'redis_database' => (int) ($source->get( $category, 'redis_database' ) ?? 0),
+			'redis_prefix' => $source->get( $category, 'redis_prefix' ) ?? 'rate_limit_',
+			'redis_timeout' => (float) ($source->get( $category, 'redis_timeout' ) ?? 2.0),
+			'redis_auth' => $source->get( $category, 'redis_auth' ),
+			'redis_persistent' => (bool) ($source->get( $category, 'redis_persistent' ) ?? false),
+			'file_path' => $source->get( $category, 'file_path' ) ?? 'cache/rate_limits',
+			'key_prefix' => $source->get( $category, 'key_prefix' ) ?? 'rl_',
+			'burst_size' => (int) ($source->get( $category, 'burst_size' ) ?? 0)
 		];
 
-		return new self( $Settings );
+		return new self( $settings );
 	}
 
 	/**
@@ -73,7 +73,7 @@ class RateLimitConfig
 	 */
 	public function isEnabled(): bool
 	{
-		return (bool) $this->_Settings['enabled'];
+		return (bool) $this->_settings['enabled'];
 	}
 
 	/**
@@ -81,7 +81,7 @@ class RateLimitConfig
 	 */
 	public function getStorage(): string
 	{
-		return $this->_Settings['storage'];
+		return $this->_settings['storage'];
 	}
 
 	/**
@@ -89,7 +89,7 @@ class RateLimitConfig
 	 */
 	public function getLimit(): int
 	{
-		return (int) $this->_Settings['requests'];
+		return (int) $this->_settings['requests'];
 	}
 
 	/**
@@ -97,7 +97,7 @@ class RateLimitConfig
 	 */
 	public function getWindow(): int
 	{
-		return (int) $this->_Settings['window'];
+		return (int) $this->_settings['window'];
 	}
 
 	/**
@@ -105,7 +105,7 @@ class RateLimitConfig
 	 */
 	public function getBurstSize(): int
 	{
-		return (int) $this->_Settings['burst_size'];
+		return (int) $this->_settings['burst_size'];
 	}
 
 	/**
@@ -113,7 +113,7 @@ class RateLimitConfig
 	 */
 	public function getKeyPrefix(): string
 	{
-		return $this->_Settings['key_prefix'];
+		return $this->_settings['key_prefix'];
 	}
 
 	/**
@@ -121,7 +121,7 @@ class RateLimitConfig
 	 */
 	public function getRedisHost(): string
 	{
-		return $this->_Settings['redis_host'];
+		return $this->_settings['redis_host'];
 	}
 
 	/**
@@ -129,7 +129,7 @@ class RateLimitConfig
 	 */
 	public function getRedisPort(): int
 	{
-		return (int) $this->_Settings['redis_port'];
+		return (int) $this->_settings['redis_port'];
 	}
 
 	/**
@@ -137,7 +137,7 @@ class RateLimitConfig
 	 */
 	public function getRedisDatabase(): int
 	{
-		return (int) $this->_Settings['redis_database'];
+		return (int) $this->_settings['redis_database'];
 	}
 
 	/**
@@ -145,7 +145,7 @@ class RateLimitConfig
 	 */
 	public function getRedisPrefix(): string
 	{
-		return $this->_Settings['redis_prefix'];
+		return $this->_settings['redis_prefix'];
 	}
 
 	/**
@@ -153,7 +153,7 @@ class RateLimitConfig
 	 */
 	public function getRedisTimeout(): float
 	{
-		return (float) $this->_Settings['redis_timeout'];
+		return (float) $this->_settings['redis_timeout'];
 	}
 
 	/**
@@ -161,7 +161,7 @@ class RateLimitConfig
 	 */
 	public function getRedisAuth(): ?string
 	{
-		return $this->_Settings['redis_auth'];
+		return $this->_settings['redis_auth'];
 	}
 
 	/**
@@ -169,7 +169,7 @@ class RateLimitConfig
 	 */
 	public function getRedisPersistent(): bool
 	{
-		return (bool) $this->_Settings['redis_persistent'];
+		return (bool) $this->_settings['redis_persistent'];
 	}
 
 	/**
@@ -177,7 +177,7 @@ class RateLimitConfig
 	 */
 	public function getFilePath(): string
 	{
-		return $this->_Settings['file_path'];
+		return $this->_settings['file_path'];
 	}
 
 	/**
@@ -205,6 +205,6 @@ class RateLimitConfig
 	 */
 	public function toArray(): array
 	{
-		return $this->_Settings;
+		return $this->_settings;
 	}
 }

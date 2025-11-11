@@ -16,16 +16,16 @@ use Neuron\Log\Log;
  */
 class RedisRateLimitStorage implements IRateLimitStorage
 {
-	private ?Redis $_Redis = null;
-	private array $_Config;
-	private string $_Prefix;
+	private ?Redis $_redis = null;
+	private array $_config;
+	private string $_prefix;
 
 	/**
-	 * @param array $Config Redis configuration
+	 * @param array $config Redis configuration
 	 */
-	public function __construct( array $Config = [] )
+	public function __construct( array $config = [] )
 	{
-		$this->_Config = array_merge([
+		$this->_config = array_merge([
 			'host' => '127.0.0.1',
 			'port' => 6379,
 			'database' => 0,
@@ -33,9 +33,9 @@ class RedisRateLimitStorage implements IRateLimitStorage
 			'timeout' => 2.0,
 			'auth' => null,
 			'persistent' => false
-		], $Config);
+		], $config);
 
-		$this->_Prefix = $this->_Config['prefix'];
+		$this->_prefix = $this->_config['prefix'];
 	}
 
 	/**
@@ -46,37 +46,37 @@ class RedisRateLimitStorage implements IRateLimitStorage
 	 */
 	private function getRedis(): Redis
 	{
-		if( $this->_Redis === null )
+		if( $this->_redis === null )
 		{
-			$this->_Redis = new Redis();
+			$this->_redis = new Redis();
 
 			try
 			{
-				if( $this->_Config['persistent'] )
+				if( $this->_config['persistent'] )
 				{
-					$this->_Redis->pconnect(
-						$this->_Config['host'],
-						$this->_Config['port'],
-						$this->_Config['timeout']
+					$this->_redis->pconnect(
+						$this->_config['host'],
+						$this->_config['port'],
+						$this->_config['timeout']
 					);
 				}
 				else
 				{
-					$this->_Redis->connect(
-						$this->_Config['host'],
-						$this->_Config['port'],
-						$this->_Config['timeout']
+					$this->_redis->connect(
+						$this->_config['host'],
+						$this->_config['port'],
+						$this->_config['timeout']
 					);
 				}
 
-				if( $this->_Config['auth'] )
+				if( $this->_config['auth'] )
 				{
-					$this->_Redis->auth( $this->_Config['auth'] );
+					$this->_redis->auth( $this->_config['auth'] );
 				}
 
-				if( $this->_Config['database'] > 0 )
+				if( $this->_config['database'] > 0 )
 				{
-					$this->_Redis->select( $this->_Config['database'] );
+					$this->_redis->select( $this->_config['database'] );
 				}
 			}
 			catch( RedisException $e )
@@ -86,7 +86,7 @@ class RedisRateLimitStorage implements IRateLimitStorage
 			}
 		}
 
-		return $this->_Redis;
+		return $this->_redis;
 	}
 
 	/**
@@ -97,7 +97,7 @@ class RedisRateLimitStorage implements IRateLimitStorage
 		try
 		{
 			$redis = $this->getRedis();
-			$fullKey = $this->_Prefix . $key;
+			$fullKey = $this->_prefix . $key;
 			$now = microtime( true );
 			$windowStart = $now - $window;
 
@@ -146,7 +146,7 @@ class RedisRateLimitStorage implements IRateLimitStorage
 		try
 		{
 			$redis = $this->getRedis();
-			$fullKey = $this->_Prefix . $key;
+			$fullKey = $this->_prefix . $key;
 			$now = microtime( true );
 			$windowStart = $now - $window;
 
@@ -171,7 +171,7 @@ class RedisRateLimitStorage implements IRateLimitStorage
 		try
 		{
 			$redis = $this->getRedis();
-			$fullKey = $this->_Prefix . $key;
+			$fullKey = $this->_prefix . $key;
 			$now = microtime( true );
 			$windowStart = $now - $window;
 
@@ -204,7 +204,7 @@ class RedisRateLimitStorage implements IRateLimitStorage
 		try
 		{
 			$redis = $this->getRedis();
-			$fullKey = $this->_Prefix . $key;
+			$fullKey = $this->_prefix . $key;
 			$redis->del( $fullKey );
 		}
 		catch( RedisException $e )
@@ -221,7 +221,7 @@ class RedisRateLimitStorage implements IRateLimitStorage
 		try
 		{
 			$redis = $this->getRedis();
-			$pattern = $this->_Prefix . '*';
+			$pattern = $this->_prefix . '*';
 			$keys = $redis->keys( $pattern );
 
 			if( !empty( $keys ) )
@@ -240,11 +240,11 @@ class RedisRateLimitStorage implements IRateLimitStorage
 	 */
 	public function __destruct()
 	{
-		if( $this->_Redis !== null )
+		if( $this->_redis !== null )
 		{
 			try
 			{
-				$this->_Redis->close();
+				$this->_redis->close();
 			}
 			catch( RedisException $e )
 			{
