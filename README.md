@@ -114,8 +114,6 @@ $router->get('/api/data', $handler, 'rate_limit');
 
 ### Configuration Options
 
-Rate limiting can be configured via array or environment variables:
-
 ```php
 // Array configuration
 $config = new RateLimitConfig([
@@ -127,13 +125,6 @@ $config = new RateLimitConfig([
     'redis_port' => 6379,
     'file_path' => 'cache/rate_limits'
 ]);
-
-// From settings/environment variables (flat structure)
-// RATE_LIMIT_ENABLED=true
-// RATE_LIMIT_STORAGE=redis
-// RATE_LIMIT_REQUESTS=100
-// RATE_LIMIT_WINDOW=3600
-$config = RateLimitConfig::fromSettings($settingsSource);
 ```
 
 ### Storage Backends
@@ -170,30 +161,6 @@ For unit tests and development:
 $config = new RateLimitConfig([
     'storage' => 'memory'  // Data lost when PHP process ends
 ]);
-```
-
-### Advanced Features
-
-#### Key Strategies
-Control how rate limits are applied:
-
-```php
-// Limit by IP address (default)
-$filter = new RateLimitFilter($config, 'ip');
-
-// Limit by authenticated user
-$filter = new RateLimitFilter($config, 'user');
-
-// Limit by IP + route combination
-$filter = new RateLimitFilter($config, 'route');
-
-// Custom key generation
-class CustomRateLimitFilter extends RateLimitFilter {
-    protected function getCustomKey(RouteMap $route): string {
-        // Your custom logic here
-        return $_SESSION['tenant_id'] ?? $this->getClientIp();
-    }
-}
 ```
 
 #### Whitelisting and Blacklisting
