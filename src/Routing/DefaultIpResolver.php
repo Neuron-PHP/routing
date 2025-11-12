@@ -28,10 +28,10 @@ class DefaultIpResolver implements IIpResolver
 	{
 		// Check common proxy headers in order of preference
 		$headers = [
-			'HTTP_CF_CONNECTING_IP',     // Cloudflare
-			'HTTP_X_FORWARDED_FOR',       // Standard proxy
-			'HTTP_X_REAL_IP',            // Nginx
-			'HTTP_CLIENT_IP',            // Some proxies
+			'HTTP_CF_CONNECTING_IP',	// Cloudflare
+			'HTTP_X_FORWARDED_FOR',		// Standard proxy
+			'HTTP_X_REAL_IP',				// Nginx
+			'HTTP_CLIENT_IP',				// Some proxies
 		];
 
 		foreach( $headers as $header )
@@ -61,7 +61,7 @@ class DefaultIpResolver implements IIpResolver
 	 */
 	protected function extractFirstIp( string $ipString ): string
 	{
-		if( strpos( $ipString, ',' ) !== false )
+		if( str_contains( $ipString, ',' ) )
 		{
 			$ips = explode( ',', $ipString );
 			return trim( $ips[0] );

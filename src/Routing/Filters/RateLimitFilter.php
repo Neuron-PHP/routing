@@ -8,6 +8,8 @@ use Neuron\Routing\RateLimit\RateLimitConfig;
 use Neuron\Routing\RateLimit\RateLimitResponse;
 use Neuron\Routing\RateLimit\Storage\IRateLimitStorage;
 use Neuron\Routing\RateLimit\Storage\RateLimitStorageFactory;
+use Neuron\Routing\IIpResolver;
+use Neuron\Routing\DefaultIpResolver;
 use Neuron\Patterns\Registry;
 use Neuron\Log\Log;
 
@@ -26,24 +28,29 @@ class RateLimitFilter extends Filter
 	private string $_keyStrategy;
 	private array $_whitelist;
 	private array $_blacklist;
+	private IIpResolver $_ipResolver;
 
 	/**
 	 * @param RateLimitConfig $config Rate limit configuration
 	 * @param string $keyStrategy Key generation strategy ('ip', 'user', 'route', 'custom')
 	 * @param array $whitelist IP addresses or user IDs to exempt from rate limiting
 	 * @param array $blacklist IP addresses or user IDs to apply stricter limits
+	 * @param IIpResolver|null $ipResolver Optional IP resolver (defaults to DefaultIpResolver)
+	 * @throws \Exception
 	 */
 	public function __construct(
 		RateLimitConfig $config,
 		string $keyStrategy = 'ip',
 		array $whitelist = [],
-		array $blacklist = []
+		array $blacklist = [],
+		?IIpResolver $ipResolver = null
 	)
 	{
 		$this->_config = $config;
 		$this->_keyStrategy = $keyStrategy;
 		$this->_whitelist = $whitelist;
 		$this->_blacklist = $blacklist;
+		$this->_ipResolver = $ipResolver ?? new DefaultIpResolver();
 
 		// Get base path from registry if available
 		$basePath = Registry::getInstance()->get( 'BasePath' ) ?? '';
@@ -59,7 +66,7 @@ class RateLimitFilter extends Filter
 	}
 
 	/**
-	 * Check rate limit for the current request.
+	 * Check the rate limit for the current request.
 	 *
 	 * @param RouteMap $route
 	 * @return void
@@ -112,45 +119,23 @@ class RateLimitFilter extends Filter
 	 */
 	protected function generateKey( RouteMap $route ): string
 	{
-		switch( $this->_keyStrategy )
+		return match ( $this->_keyStrategy )
 		{
-			case 'ip':
-				return $this->getClientIp();
-
-			case 'user':
-				return $this->getUserId();
-
-			case 'route':
-				return $this->getClientIp() . ':' . $route->getPath();
-
-			case 'custom':
-				return $this->getCustomKey( $route );
-
-			default:
-				return $this->getClientIp();
-		}
+			'user' => $this->getUserId(),
+			'route' => $this->getClientIp() . ':' . $route->getPath(),
+			'custom' => $this->getCustomKey( $route ),
+			default => $this->getClientIp(),
+		};
 	}
 
 	/**
-	 * Get client IP address.
+	 * Get the client IP address using the configured IP resolver.
 	 *
 	 * @return string
 	 */
 	protected function getClientIp(): string
 	{
-		// Check for forwarded IP (proxy/load balancer)
-		if( !empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )
-		{
-			$ips = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] );
-			return trim( $ips[0] );
-		}
-
-		if( !empty( $_SERVER['HTTP_X_REAL_IP'] ) )
-		{
-			return $_SERVER['HTTP_X_REAL_IP'];
-		}
-
-		return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+		return $this->_ipResolver->resolve( $_SERVER );
 	}
 
 	/**
@@ -173,7 +158,7 @@ class RateLimitFilter extends Filter
 	}
 
 	/**
-	 * Get custom key for rate limiting.
+	 * Get a custom key for rate limiting.
 	 *
 	 * @param RouteMap $route
 	 * @return string
@@ -224,7 +209,7 @@ class RateLimitFilter extends Filter
 	}
 
 	/**
-	 * Get time window for a key.
+	 * Get the time window for a key.
 	 *
 	 * @param string $key
 	 * @return int
@@ -236,7 +221,7 @@ class RateLimitFilter extends Filter
 	}
 
 	/**
-	 * Add rate limit headers to response.
+	 * Add the rate limit headers to response.
 	 *
 	 * @param string $key
 	 * @param int $limit
