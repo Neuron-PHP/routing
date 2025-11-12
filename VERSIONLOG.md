@@ -1,4 +1,4 @@
-## 0.8.3
+## 0.8.3 2025-11-12
 * Updated to use the IPResolver for rate limiting.
 
 ## 0.8.2 2025-11-11
