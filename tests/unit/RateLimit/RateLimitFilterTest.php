@@ -5,6 +5,8 @@ use Neuron\Routing\Filters\RateLimitFilter;
 use Neuron\Routing\RateLimit\RateLimitConfig;
 use Neuron\Routing\RouteMap;
 use Neuron\Routing\Router;
+use Neuron\Routing\IIpResolver;
+use Neuron\Routing\DefaultIpResolver;
 
 class RateLimitFilterTest extends TestCase
 {
@@ -192,11 +194,103 @@ class RateLimitFilterTest extends TestCase
 		$this->assertEquals('10.0.0.1:/test', $keyRoute);
 	}
 
+	public function testCustomIpResolver()
+	{
+		// Create a mock IP resolver that always returns a specific IP
+		$mockResolver = $this->createMock(IIpResolver::class);
+		$mockResolver->method('resolve')
+			->willReturn('203.0.113.42');
+
+		$config = new RateLimitConfig([
+			'enabled' => true,
+			'storage' => 'memory',
+			'requests' => 5,
+			'window' => 60
+		]);
+
+		$filter = new RateLimitFilter(
+			$config,
+			'ip',
+			[],
+			[],
+			$mockResolver
+		);
+
+		$route = new RouteMap('/test', function() { return 'test'; });
+
+		// Use reflection to verify the IP being used
+		$reflection = new ReflectionClass($filter);
+		$method = $reflection->getMethod('generateKey');
+		$method->setAccessible(true);
+
+		$key = $method->invoke($filter, $route);
+
+		// Should use the IP from our mock resolver
+		$this->assertEquals('203.0.113.42', $key);
+	}
+
+	public function testDefaultIpResolver()
+	{
+		// Test that DefaultIpResolver is used when no resolver is provided
+		$_SERVER['REMOTE_ADDR'] = '198.51.100.25';
+
+		$config = new RateLimitConfig([
+			'enabled' => true,
+			'storage' => 'memory',
+			'requests' => 5,
+			'window' => 60
+		]);
+
+		// Create filter without explicit IP resolver
+		$filter = new RateLimitFilter($config, 'ip');
+
+		$route = new RouteMap('/test', function() { return 'test'; });
+
+		// Use reflection to verify IP resolution
+		$reflection = new ReflectionClass($filter);
+		$method = $reflection->getMethod('generateKey');
+		$method->setAccessible(true);
+
+		$key = $method->invoke($filter, $route);
+
+		// Should use the IP from $_SERVER via DefaultIpResolver
+		$this->assertEquals('198.51.100.25', $key);
+	}
+
+	public function testCloudflareIpResolution()
+	{
+		// Test that Cloudflare headers are supported via DefaultIpResolver
+		$_SERVER['REMOTE_ADDR'] = '192.0.2.1';
+		$_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.50';
+
+		$config = new RateLimitConfig([
+			'enabled' => true,
+			'storage' => 'memory',
+			'requests' => 5,
+			'window' => 60
+		]);
+
+		$filter = new RateLimitFilter($config, 'ip');
+
+		$route = new RouteMap('/test', function() { return 'test'; });
+
+		// Use reflection to verify IP resolution
+		$reflection = new ReflectionClass($filter);
+		$method = $reflection->getMethod('generateKey');
+		$method->setAccessible(true);
+
+		$key = $method->invoke($filter, $route);
+
+		// Should prioritize Cloudflare header
+		$this->assertEquals('198.51.100.50', $key);
+	}
+
 	protected function tearDown(): void
 	{
 		// Clean up server variables
 		unset($_SERVER['REMOTE_ADDR']);
 		unset($_SERVER['HTTP_X_FORWARDED_FOR']);
 		unset($_SERVER['HTTP_X_REAL_IP']);
+		unset($_SERVER['HTTP_CF_CONNECTING_IP']);
 	}
 }
