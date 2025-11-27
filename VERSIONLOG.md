@@ -1,3 +1,5 @@
+## 0.8.6
+
 ## 0.8.5 2025-11-27
 * Added wildcard support for route parameters.
 
