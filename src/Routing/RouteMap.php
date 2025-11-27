@@ -175,22 +175,37 @@ class RouteMap
 
 		foreach( $parts as $part )
 		{
-			if( substr( $part, 0, 1 ) == ':' )
+			if( substr( $part, 0, 1 ) == '*' )
+			{
+				// Wildcard parameter - captures all remaining URI segments
+				$param = substr( $part, 1 );
+
+				$this->checkForDuplicateParams( $param, $details );
+
+				$details[] = [
+					'param'    => $param,
+					'action'   => false,
+					'wildcard' => true
+				];
+			}
+			else if( substr( $part, 0, 1 ) == ':' )
 			{
 				$param = substr( $part, 1 );
 
 				$this->checkForDuplicateParams( $param, $details );
 
 				$details[] = [
-					'param'  => $param,
-					'action' => false
+					'param'    => $param,
+					'action'   => false,
+					'wildcard' => false
 				];
 			}
 			else
 			{
 				$details[] = [
-					'param'  => false,
-					'action' => $part
+					'param'    => false,
+					'action'   => $part,
+					'wildcard' => false
 				];
 			}
 		}
