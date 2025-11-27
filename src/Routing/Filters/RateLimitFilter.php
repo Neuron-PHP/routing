@@ -99,8 +99,18 @@ class RateLimitFilter extends Filter
 			// Get rate limit info
 			$remaining = $this->_storage->getRemainingAttempts( $key, $limit, $window );
 			$resetTime = $this->_storage->getResetTime( $key, $window );
+			$attempts = $limit - $remaining;
 
 			Log::warning( "Rate limit exceeded for key: $key" );
+
+			// Emit rate limit exceeded event
+			\Neuron\Application\CrossCutting\Event::emit( new \Neuron\Mvc\Events\RateLimitExceededEvent(
+				$this->getClientIp(),
+				$route->getPath(),
+				$limit,
+				$window,
+				$attempts
+			) );
 
 			// Send rate limit response and exit
 			RateLimitResponse::send( $limit, $remaining, $resetTime );

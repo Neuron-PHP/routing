@@ -173,7 +173,18 @@ class Router extends Memory implements IRunnable
 	 */
 	protected function isRouteWithParams( RouteMap $route ) : bool
 	{
-		return strpos( $route->Path, ':' ) == true;
+		return strpos( $route->Path, ':' ) !== false || strpos( $route->Path, '*' ) !== false;
+	}
+
+	/**
+	 * Check if route contains a wildcard parameter
+	 *
+	 * @param RouteMap $route
+	 * @return bool
+	 */
+	protected function hasWildcard( RouteMap $route ) : bool
+	{
+		return strpos( $route->Path, '*' ) !== false;
 	}
 
 	/**
@@ -207,7 +218,15 @@ class Router extends Memory implements IRunnable
 
 			$routeSegments = count( explode( '/', $route->Path ) );
 
-			if( $segments == $routeSegments )
+			// Wildcard routes need >= segments, normal routes need exact match
+			if( $this->hasWildcard( $route ) )
+			{
+				if( $segments >= $routeSegments )
+				{
+					return $this->processRouteWithParameters( $route, $uri );
+				}
+			}
+			else if( $segments == $routeSegments )
 			{
 				return $this->processRouteWithParameters( $route, $uri );
 			}
@@ -257,22 +276,30 @@ class Router extends Memory implements IRunnable
 		$params = [];
 		$iOffset = 0;
 
-		foreach( $uriParts as $part )
+		foreach( $details as $index => $detail )
 		{
-			if( $iOffset >= count( $details ) )
+			if( $iOffset >= count( $uriParts ) )
 			{
 				return [];
 			}
 
-			$action = $details[ $iOffset ][ 'action' ];
+			$action = $detail[ 'action' ];
+			$isWildcard = $detail[ 'wildcard' ] ?? false;
 
-			if( $action && $action != $part )
+			if( $isWildcard )
+			{
+				// Wildcard parameter - capture all remaining URI segments
+				$remainingParts = array_slice( $uriParts, $iOffset );
+				$params[ $detail[ 'param' ] ] = implode( '/', $remainingParts );
+				break; // Wildcard consumes rest of URI
+			}
+			else if( $action && $action != $uriParts[ $iOffset ] )
 			{
 				return [];
 			}
-			else
+			else if( $detail[ 'param' ] )
 			{
-				$params[ $details[ $iOffset ][ 'param' ] ] = $part;
+				$params[ $detail[ 'param' ] ] = $uriParts[ $iOffset ];
 			}
 
 			$iOffset++;

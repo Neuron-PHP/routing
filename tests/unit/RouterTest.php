@@ -438,4 +438,107 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
 		$this->assertEquals( 'Controller@method', $Payload );
 	}
+
+	public function testWildcardRoute()
+	{
+		$this->Router->get( '/md/*page',
+			function( $parameters )
+			{
+				return $parameters[ 'page' ];
+			}
+		);
+
+		$Route = $this->Router->getRoute(
+			Routing\RequestMethod::GET,
+			'/md/authentication'
+		);
+
+		$this->assertNotNull( $Route );
+		$this->assertEquals( '/md/*page', $Route->Path );
+
+		$test = $this->Router->run(
+			[
+				'route' => '/md/authentication',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'authentication', $test );
+	}
+
+	public function testWildcardRouteMultipleSegments()
+	{
+		$this->Router->get( '/md/*page',
+			function( $parameters )
+			{
+				return $parameters[ 'page' ];
+			}
+		);
+
+		$test = $this->Router->run(
+			[
+				'route' => '/md/cms/guides/authentication',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'cms/guides/authentication', $test );
+	}
+
+	public function testWildcardRouteSingleSegment()
+	{
+		$this->Router->get( '/md/*page',
+			function( $parameters )
+			{
+				return $parameters[ 'page' ];
+			}
+		);
+
+		$test = $this->Router->run(
+			[
+				'route' => '/md/index',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'index', $test );
+	}
+
+	public function testWildcardWithStaticPrefix()
+	{
+		$this->Router->get( '/api/v1/*endpoint',
+			function( $parameters )
+			{
+				return 'v1:' . $parameters[ 'endpoint' ];
+			}
+		);
+
+		$test = $this->Router->run(
+			[
+				'route' => '/api/v1/users/123/posts',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'v1:users/123/posts', $test );
+	}
+
+	public function testWildcardRouteDeepPath()
+	{
+		$this->Router->get( '/docs/*path',
+			function( $parameters )
+			{
+				return $parameters[ 'path' ];
+			}
+		);
+
+		$test = $this->Router->run(
+			[
+				'route' => '/docs/cms/reference/events/cache-hit',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'cms/reference/events/cache-hit', $test );
+	}
 }
