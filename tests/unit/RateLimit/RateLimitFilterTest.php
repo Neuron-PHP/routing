@@ -144,7 +144,7 @@ class RateLimitFilterTest extends TestCase
 	public function testConfigFromSettings()
 	{
 		// Mock settings source
-		$mockSource = $this->createMock(\Neuron\Data\Setting\Source\ISettingSource::class);
+		$mockSource = $this->createMock(\Neuron\Data\Settings\Source\ISettingSource::class);
 
 		$mockSource->method('get')
 			->willReturnMap([
