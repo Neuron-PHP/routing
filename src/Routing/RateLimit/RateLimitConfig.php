@@ -2,7 +2,7 @@
 
 namespace Neuron\Routing\RateLimit;
 
-use Neuron\Data\Setting\Source\ISettingSource;
+use Neuron\Data\Settings\Source\ISettingSource;
 
 /**
  * Configuration for rate limiting.

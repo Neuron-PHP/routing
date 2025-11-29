@@ -2,9 +2,9 @@
 
 namespace Neuron\Routing;
 
-use Neuron\Data\Filter\Get;
-use Neuron\Data\Filter\Post;
-use Neuron\Data\Filter\Server;
+use Neuron\Data\Filters\Get;
+use Neuron\Data\Filters\Post;
+use Neuron\Data\Filters\Server;
 
 /**
  *
