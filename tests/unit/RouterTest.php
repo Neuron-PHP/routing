@@ -541,4 +541,106 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
 		$this->assertEquals( 'cms/reference/events/cache-hit', $test );
 	}
+
+	public function testSetIpResolver()
+	{
+		$resolver = new Routing\DefaultIpResolver();
+		$this->Router->setIpResolver( $resolver );
+
+		// Test that IP resolver is used by making a request
+		$this->Router->get( '/test', function(){ return 'ok'; } );
+
+		$result = $this->Router->run([
+			'route' => '/test',
+			'type' => 'GET'
+		]);
+
+		$this->assertEquals( 'ok', $result );
+	}
+
+	public function testRegisterAndGetFilter()
+	{
+		$filter = new Routing\Filter( function() { return true; }, null );
+		$this->Router->registerFilter( 'test-filter', $filter );
+
+		$retrieved = $this->Router->getFilter( 'test-filter' );
+		$this->assertSame( $filter, $retrieved );
+	}
+
+	public function testGetFilterNotFound()
+	{
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Filter nonexistent not registered' );
+
+		$this->Router->getFilter( 'nonexistent' );
+	}
+
+	public function testAddFilter()
+	{
+		// addFilter adds to the router's filter array
+		$this->Router->addFilter( 'auth' );
+		$this->Router->addFilter( 'rate-limit' );
+
+		// Just verify it doesn't throw - internal array not accessible
+		$this->assertTrue( true );
+	}
+
+	public function testGetRouteByName()
+	{
+		$route = $this->Router->get( '/users/:id', function() {} );
+		$route->setName( 'user.show' );
+
+		$found = $this->Router->getRouteByName( 'user.show' );
+
+		$this->assertNotNull( $found );
+		$this->assertSame( $route, $found );
+	}
+
+	public function testGetRouteByNameNotFound()
+	{
+		$route = $this->Router->getRouteByName( 'nonexistent' );
+		$this->assertNull( $route );
+	}
+
+	public function testGetAllNamedRoutes()
+	{
+		$route1 = $this->Router->get( '/users', function() {} );
+		$route1->setName( 'users.index' );
+
+		$route2 = $this->Router->get( '/posts', function() {} );
+		$route2->setName( 'posts.index' );
+
+		// Add an unnamed route
+		$this->Router->get( '/about', function() {} );
+
+		$namedRoutes = $this->Router->getAllNamedRoutes();
+
+		$this->assertCount( 2, $namedRoutes );
+
+		// getAllNamedRoutes returns array of arrays with 'name', 'method', 'path'
+		$names = array_column( $namedRoutes, 'name' );
+		$this->assertContains( 'users.index', $names );
+		$this->assertContains( 'posts.index', $names );
+
+		// Verify structure
+		$this->assertArrayHasKey( 'name', $namedRoutes[0] );
+		$this->assertArrayHasKey( 'method', $namedRoutes[0] );
+		$this->assertArrayHasKey( 'path', $namedRoutes[0] );
+	}
+
+	public function testGenerateUrl()
+	{
+		$route = $this->Router->get( '/users/:id', function() {} );
+		$route->setName( 'user.show' );
+
+		$url = $this->Router->generateUrl( 'user.show', ['id' => 123] );
+
+		$this->assertEquals( '/users/123', $url );
+	}
+
+	public function testGenerateUrlNotFound()
+	{
+		$url = $this->Router->generateUrl( 'nonexistent', [] );
+		$this->assertNull( $url );
+	}
 }

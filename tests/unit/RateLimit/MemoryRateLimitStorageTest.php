@@ -153,4 +153,17 @@ class MemoryRateLimitStorageTest extends TestCase
 		// storage2 should still allow the same key
 		$this->assertTrue($storage2->allow($key, $limit, $window));
 	}
+
+	public function testGetResetTimeForNewKey()
+	{
+		$key = 'new_key';
+		$window = 120;
+
+		$beforeTime = time();
+		$resetTime = $this->storage->getResetTime($key, $window);
+
+		// For a new key with no attempts, should return time + window
+		$this->assertGreaterThanOrEqual($beforeTime + $window - 1, $resetTime);
+		$this->assertLessThanOrEqual($beforeTime + $window + 1, $resetTime);
+	}
 }
