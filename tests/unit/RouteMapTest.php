@@ -186,4 +186,48 @@ class RouteMapTest extends PHPUnit\Framework\TestCase
 		$result = $route->execute( $router );
 		$this->assertEquals( 'no-filter', $result );
 	}
+
+	public function testPayloadInitialization()
+	{
+		$route = new Routing\RouteMap( '/test', function() {} );
+
+		// Payload should be initialized as empty array
+		$this->assertIsArray( $route->Payload );
+		$this->assertEmpty( $route->Payload );
+	}
+
+	public function testPayloadCanBeSet()
+	{
+		$route = new Routing\RouteMap( '/test', function() {} );
+
+		$route->Payload = ['key' => 'value', 'number' => 42];
+
+		$this->assertArrayHasKey( 'key', $route->Payload );
+		$this->assertEquals( 'value', $route->Payload['key'] );
+		$this->assertEquals( 42, $route->Payload['number'] );
+	}
+
+	public function testNameInitialization()
+	{
+		$route = new Routing\RouteMap( '/test', function() {} );
+
+		// Name should be initialized as empty string
+		$this->assertEquals( '', $route->Name );
+	}
+
+	public function testFilterInitialization()
+	{
+		$route = new Routing\RouteMap( '/test', function() {} );
+
+		// Filter should be empty string when not provided
+		$this->assertEquals( '', $route->Filter );
+	}
+
+	public function testFilterInitializationWithValue()
+	{
+		$route = new Routing\RouteMap( '/test', function() {}, 'auth' );
+
+		// Filter should be set to provided value
+		$this->assertEquals( 'auth', $route->Filter );
+	}
 }

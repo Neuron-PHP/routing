@@ -577,4 +577,106 @@ class FileRateLimitStorageTest extends TestCase
 		$removed = $storage->gc();
 		$this->assertEquals( 1, $removed );
 	}
+
+	public function testConstructorWithGcTriggered(): void
+	{
+		// Create directory with some old files first
+		$testDirGc = sys_get_temp_dir() . '/neuron_gc_test_' . uniqid();
+		mkdir( $testDirGc, 0777, true );
+
+		// Create an old file
+		$oldFile = $testDirGc . '/old_file.rl';
+		$oldData = ['attempts' => [time() - 90000]]; // Very old attempt
+		file_put_contents( $oldFile, json_encode( $oldData ) );
+
+		// Create storage with 100% GC probability to ensure GC runs
+		$storage = new FileRateLimitStorage([
+			'path' => $testDirGc,
+			'prefix' => 'gc_',
+			'gc_probability' => 1.0 // Always run GC
+		]);
+
+		// File should be cleaned up by constructor's GC
+		$this->assertFileDoesNotExist( $oldFile );
+
+		// Clean up
+		if( is_dir( $testDirGc ) )
+		{
+			$files = glob( $testDirGc . '/*' );
+			if( $files !== false )
+			{
+				foreach( $files as $file )
+				{
+					if( is_file( $file ) )
+					{
+						unlink( $file );
+					}
+				}
+			}
+			rmdir( $testDirGc );
+		}
+	}
+
+	public function testConstructorWithExistingDirectory(): void
+	{
+		// Create directory first
+		$testDirExisting = sys_get_temp_dir() . '/neuron_existing_' . uniqid();
+		mkdir( $testDirExisting, 0777, true );
+
+		// Create storage with existing directory
+		$storage = new FileRateLimitStorage([
+			'path' => $testDirExisting,
+			'prefix' => 'existing_',
+			'gc_probability' => 0
+		]);
+
+		$this->assertDirectoryExists( $testDirExisting );
+
+		// Clean up
+		rmdir( $testDirExisting );
+	}
+
+	public function testReadFileReturnsNullForNonExistentFile(): void
+	{
+		$storage = new FileRateLimitStorage([
+			'path' => $this->testDir,
+			'prefix' => 'test_',
+			'gc_probability' => 0
+		]);
+
+		$reflection = new \ReflectionClass( $storage );
+		$method = $reflection->getMethod( 'readFile' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $storage, $this->testDir . '/nonexistent.rl' );
+		$this->assertNull( $result );
+	}
+
+	public function testWriteFileCreatesNewFile(): void
+	{
+		$storage = new FileRateLimitStorage([
+			'path' => $this->testDir,
+			'prefix' => 'write_',
+			'gc_probability' => 0
+		]);
+
+		$reflection = new \ReflectionClass( $storage );
+		$writeMethod = $reflection->getMethod( 'writeFile' );
+		$writeMethod->setAccessible( true );
+
+		$testFile = $this->testDir . '/write_test.rl';
+		$testData = ['attempts' => [time()]];
+
+		$result = $writeMethod->invoke( $storage, $testFile, $testData );
+		$this->assertTrue( $result );
+		$this->assertFileExists( $testFile );
+
+		// Verify content
+		$readMethod = $reflection->getMethod( 'readFile' );
+		$readMethod->setAccessible( true );
+		$readData = $readMethod->invoke( $storage, $testFile );
+
+		$this->assertIsArray( $readData );
+		$this->assertArrayHasKey( 'attempts', $readData );
+	}
 }

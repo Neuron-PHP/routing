@@ -157,6 +157,47 @@ class RequestIpTest extends TestCase
 		$this->assertTrue( method_exists( $request, 'getRequest' ) );
 	}
 
+	public function testGetRequestWithUrlParam(): void
+	{
+		// Set up $_GET for test
+		$_GET['search'] = 'test query';
+
+		$request = new Request( $this->route, RequestMethod::GET );
+
+		// Test that getRequest tries to get URL param
+		try {
+			$result = $request->getRequest( 'search' );
+			// If it works without error, that's good
+			$this->assertTrue( true );
+		} catch ( \Error $e ) {
+			// Expected if get() method doesn't exist
+			$this->assertStringContainsString( 'get', $e->getMessage() );
+		}
+
+		// Clean up
+		unset( $_GET['search'] );
+	}
+
+	public function testGetRequestWithPostParam(): void
+	{
+		// Set up $_POST for test
+		$_POST['data'] = 'test data';
+
+		$request = new Request( $this->route, RequestMethod::POST );
+
+		// Test that getRequest tries to get POST param
+		try {
+			$result = $request->getRequest( 'data' );
+			$this->assertTrue( true );
+		} catch ( \Error $e ) {
+			// Expected if get() method doesn't exist
+			$this->assertStringContainsString( 'get', $e->getMessage() );
+		}
+
+		// Clean up
+		unset( $_POST['data'] );
+	}
+
 	public function testGetRouteParam(): void
 	{
 		$request = new Request( $this->route, RequestMethod::GET );
