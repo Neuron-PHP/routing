@@ -2,6 +2,8 @@
 
 namespace Neuron\Routing\RateLimit\Storage;
 
+use Neuron\Core\System\IClock;
+use Neuron\Core\System\RealClock;
 use Neuron\Log\Log;
 
 /**
@@ -17,15 +19,18 @@ class FileRateLimitStorage implements IRateLimitStorage
 	private string $_path;
 	private string $_prefix;
 	private float $_gcProbability;
+	private IClock $clock;
 
 	/**
 	 * @param array $config Configuration options
+	 * @param IClock|null $clock Clock implementation (null = use real clock)
 	 */
-	public function __construct( array $config = [] )
+	public function __construct( array $config = [], ?IClock $clock = null )
 	{
 		$this->_path = $config['path'] ?? sys_get_temp_dir() . '/rate_limits';
 		$this->_prefix = $config['prefix'] ?? 'rl_';
 		$this->_gcProbability = $config['gc_probability'] ?? 0.01;
+		$this->clock = $clock ?? new RealClock();
 
 		// Ensure directory exists
 		if( !is_dir( $this->_path ) )
@@ -125,7 +130,7 @@ class FileRateLimitStorage implements IRateLimitStorage
 	public function allow( string $key, int $limit, int $window ): bool
 	{
 		$filePath = $this->getFilePath( $key );
-		$now = time();
+		$now = $this->clock->time();
 		$windowStart = $now - $window;
 
 		// Read existing data
@@ -169,7 +174,7 @@ class FileRateLimitStorage implements IRateLimitStorage
 	public function getRemainingAttempts( string $key, int $limit, int $window ): int
 	{
 		$filePath = $this->getFilePath( $key );
-		$now = time();
+		$now = $this->clock->time();
 		$windowStart = $now - $window;
 
 		$data = $this->readFile( $filePath );
@@ -199,7 +204,7 @@ class FileRateLimitStorage implements IRateLimitStorage
 		$data = $this->readFile( $filePath );
 		if( $data === null || empty( $data['attempts'] ) )
 		{
-			return time() + $window;
+			return $this->clock->time() + $window;
 		}
 
 		// Find the oldest attempt
@@ -262,7 +267,7 @@ class FileRateLimitStorage implements IRateLimitStorage
 			}
 
 			// Remove files where all attempts are expired (max window of 1 day)
-			$maxAge = time() - 86400;
+			$maxAge = $this->clock->time() - 86400;
 			$hasRecent = false;
 
 			foreach( $data['attempts'] as $timestamp )

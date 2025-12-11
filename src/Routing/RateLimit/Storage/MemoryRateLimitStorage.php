@@ -2,6 +2,9 @@
 
 namespace Neuron\Routing\RateLimit\Storage;
 
+use Neuron\Core\System\IClock;
+use Neuron\Core\System\RealClock;
+
 /**
  * In-memory rate limit storage for testing.
  *
@@ -15,13 +18,16 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 {
 	private array $_storage = [];
 	private string $_prefix;
+	private IClock $clock;
 
 	/**
 	 * @param array $config Configuration options
+	 * @param IClock|null $clock Clock implementation (null = use real clock)
 	 */
-	public function __construct( array $config = [] )
+	public function __construct( array $config = [], ?IClock $clock = null )
 	{
 		$this->_prefix = $config['prefix'] ?? 'rl_';
+		$this->clock = $clock ?? new RealClock();
 	}
 
 	/**
@@ -30,7 +36,7 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	public function allow( string $key, int $limit, int $window ): bool
 	{
 		$fullKey = $this->_prefix . $key;
-		$now = time();
+		$now = $this->clock->time();
 		$windowStart = $now - $window;
 
 		// Initialize or get existing data
@@ -69,7 +75,7 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 	public function getRemainingAttempts( string $key, int $limit, int $window ): int
 	{
 		$fullKey = $this->_prefix . $key;
-		$now = time();
+		$now = $this->clock->time();
 		$windowStart = $now - $window;
 
 		if( !isset( $this->_storage[$fullKey] ) )
@@ -100,7 +106,7 @@ class MemoryRateLimitStorage implements IRateLimitStorage
 
 		if( !isset( $this->_storage[$fullKey] ) || empty( $this->_storage[$fullKey]['attempts'] ) )
 		{
-			return time() + $window;
+			return $this->clock->time() + $window;
 		}
 
 		// Find the oldest attempt in the current window

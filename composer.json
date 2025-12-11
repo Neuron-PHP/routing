@@ -10,6 +10,7 @@
     }
   ],
   "require": {
+    "neuron-php/core": "0.8.*",
     "neuron-php/patterns": "0.7.*",
     "neuron-php/logging": "0.9.*"
   },

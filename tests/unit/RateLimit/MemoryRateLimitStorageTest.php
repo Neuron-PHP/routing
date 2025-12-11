@@ -1,15 +1,18 @@
 <?php
 
+use Neuron\Core\System\FrozenClock;
 use PHPUnit\Framework\TestCase;
 use Neuron\Routing\RateLimit\Storage\MemoryRateLimitStorage;
 
 class MemoryRateLimitStorageTest extends TestCase
 {
 	private MemoryRateLimitStorage $storage;
+	private FrozenClock $clock;
 
 	protected function setUp(): void
 	{
-		$this->storage = new MemoryRateLimitStorage(['prefix' => 'test_']);
+		$this->clock = new FrozenClock(1000000); // Fixed time for deterministic tests
+		$this->storage = new MemoryRateLimitStorage(['prefix' => 'test_'], $this->clock);
 	}
 
 	public function testAllowWithinLimit()
@@ -62,8 +65,8 @@ class MemoryRateLimitStorageTest extends TestCase
 		$this->assertTrue($this->storage->allow($key, $limit, $window));
 		$this->assertFalse($this->storage->allow($key, $limit, $window));
 
-		// Wait for window to expire
-		sleep(2);
+		// Advance time past window expiration (instant, no actual sleeping!)
+		$this->clock->advance(2);
 
 		// Should be allowed again
 		$this->assertTrue($this->storage->allow($key, $limit, $window));
@@ -112,13 +115,12 @@ class MemoryRateLimitStorageTest extends TestCase
 		$limit = 5;
 		$window = 60;
 
-		$beforeTime = time();
+		$beforeTime = $this->clock->time();
 		$this->storage->allow($key, $limit, $window);
 		$resetTime = $this->storage->getResetTime($key, $window);
 
-		// Reset time should be approximately window seconds from now
-		$this->assertGreaterThanOrEqual($beforeTime + $window - 1, $resetTime);
-		$this->assertLessThanOrEqual($beforeTime + $window + 1, $resetTime);
+		// Reset time should be exactly window seconds from when request was made
+		$this->assertEquals($beforeTime + $window, $resetTime);
 	}
 
 	public function testMultipleKeys()
@@ -139,8 +141,9 @@ class MemoryRateLimitStorageTest extends TestCase
 
 	public function testPrefixIsolation()
 	{
-		$storage1 = new MemoryRateLimitStorage(['prefix' => 'app1_']);
-		$storage2 = new MemoryRateLimitStorage(['prefix' => 'app2_']);
+		$clock = new FrozenClock(1000000);
+		$storage1 = new MemoryRateLimitStorage(['prefix' => 'app1_'], $clock);
+		$storage2 = new MemoryRateLimitStorage(['prefix' => 'app2_'], $clock);
 
 		$key = 'same_key';
 		$limit = 1;
@@ -159,11 +162,10 @@ class MemoryRateLimitStorageTest extends TestCase
 		$key = 'new_key';
 		$window = 120;
 
-		$beforeTime = time();
+		$beforeTime = $this->clock->time();
 		$resetTime = $this->storage->getResetTime($key, $window);
 
-		// For a new key with no attempts, should return time + window
-		$this->assertGreaterThanOrEqual($beforeTime + $window - 1, $resetTime);
-		$this->assertLessThanOrEqual($beforeTime + $window + 1, $resetTime);
+		// For a new key with no attempts, should return exactly time + window
+		$this->assertEquals($beforeTime + $window, $resetTime);
 	}
 }
