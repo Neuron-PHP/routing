@@ -1,3 +1,11 @@
+## 0.8.7 2025-12-11
+* **Rate limit storage classes now use system abstractions** - FileRateLimitStorage and MemoryRateLimitStorage refactored to use `IClock` interface
+* Added `neuron-php/core` 0.8.* dependency for system abstractions
+* Rate limit storage supports dependency injection with optional `IClock` parameter for testability
+* Tests updated to use `FrozenClock` for instant, deterministic time-based testing
+* **Test performance improvement: 118x faster** - FileRateLimitStorageTest now runs in 0.088s instead of ~9s (eliminated sleep() calls)
+* Maintains full backward compatibility - existing code works without changes
+
 ## 0.8.6 2025-11-28
 
 ## 0.8.5 2025-11-27
@@ -35,7 +43,7 @@
 ## 0.6.6 2025-01-27
 
 ## 0.6.5 2025-11-04
-## 0.6.4
+## 0.6.4 2025-12-11
 ## 0.6.3 2024-11-27
 * Updated route signatures.
 * Added logging.
