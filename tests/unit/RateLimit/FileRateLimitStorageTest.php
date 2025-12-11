@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\RateLimit;
 
+use Neuron\Core\System\FrozenClock;
 use Neuron\Routing\RateLimit\Storage\FileRateLimitStorage;
 use PHPUnit\Framework\TestCase;
 
@@ -9,6 +10,7 @@ class FileRateLimitStorageTest extends TestCase
 {
 	private string $testDir;
 	private FileRateLimitStorage $storage;
+	private FrozenClock $clock;
 
 	protected function setUp(): void
 	{
@@ -17,11 +19,14 @@ class FileRateLimitStorageTest extends TestCase
 		// Create unique test directory
 		$this->testDir = sys_get_temp_dir() . '/neuron_file_storage_test_' . uniqid();
 
+		// Use FrozenClock for instant, deterministic time-based testing
+		$this->clock = new FrozenClock(1000000);
+
 		$this->storage = new FileRateLimitStorage([
 			'path' => $this->testDir,
 			'prefix' => 'test_',
 			'gc_probability' => 0 // Disable automatic GC during tests
-		]);
+		], $this->clock);
 	}
 
 	protected function tearDown(): void
@@ -101,8 +106,8 @@ class FileRateLimitStorageTest extends TestCase
 		$this->assertTrue( $this->storage->allow( $key, $limit, $window ) );
 		$this->assertFalse( $this->storage->allow( $key, $limit, $window ) );
 
-		// Wait for window to expire
-		sleep( 2 );
+		// Advance time past window expiration (instant, no actual sleeping!)
+		$this->clock->advance( 2 );
 
 		// Should be allowed again
 		$this->assertTrue( $this->storage->allow( $key, $limit, $window ) );
@@ -143,13 +148,12 @@ class FileRateLimitStorageTest extends TestCase
 		$limit = 5;
 		$window = 60;
 
-		$beforeTime = time();
+		$beforeTime = $this->clock->time();
 		$this->storage->allow( $key, $limit, $window );
 		$resetTime = $this->storage->getResetTime( $key, $window );
 
-		// Reset time should be approximately window seconds from now
-		$this->assertGreaterThanOrEqual( $beforeTime + $window - 1, $resetTime );
-		$this->assertLessThanOrEqual( $beforeTime + $window + 2, $resetTime );
+		// Reset time should be exactly window seconds from when request was made
+		$this->assertEquals( $beforeTime + $window, $resetTime );
 	}
 
 	public function testGetResetTimeForNewKey(): void
@@ -157,12 +161,11 @@ class FileRateLimitStorageTest extends TestCase
 		$key = 'new_reset_key';
 		$window = 120;
 
-		$beforeTime = time();
+		$beforeTime = $this->clock->time();
 		$resetTime = $this->storage->getResetTime( $key, $window );
 
-		// For a new key with no attempts, should return time + window
-		$this->assertGreaterThanOrEqual( $beforeTime + $window - 1, $resetTime );
-		$this->assertLessThanOrEqual( $beforeTime + $window + 2, $resetTime );
+		// For a new key with no attempts, should return exactly time + window
+		$this->assertEquals( $beforeTime + $window, $resetTime );
 	}
 
 	public function testReset(): void
@@ -241,13 +244,13 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'app1_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$storage2 = new FileRateLimitStorage([
 			'path' => $this->testDir,
 			'prefix' => 'app2_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$key = 'same_key';
 		$limit = 1;
@@ -288,7 +291,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'gc_expired_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		// Create a file and manually modify it to have expired timestamp
 		$key = 'expired_key';
@@ -302,7 +305,7 @@ class FileRateLimitStorageTest extends TestCase
 
 		// Read the file, modify timestamps to be old, write back
 		$data = json_decode( file_get_contents( $filePath ), true );
-		$data['attempts'] = [time() - 90000]; // More than 1 day old
+		$data['attempts'] = [$this->clock->time() - 90000]; // More than 1 day old
 		file_put_contents( $filePath, json_encode( $data ) );
 
 		// Run GC - should remove the expired file
@@ -316,7 +319,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'gc_empty_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		// Create a file and manually make it empty
 		$key = 'empty_key';
@@ -342,7 +345,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'gc_keep_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		// Create recent files
 		$storage->allow( 'recent1', 5, 60 );
@@ -367,7 +370,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'hash_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$key = 'special/chars:test@key';
 		$limit = 5;
@@ -387,7 +390,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'corrupt_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$key = 'corrupted_key';
 
@@ -447,18 +450,19 @@ class FileRateLimitStorageTest extends TestCase
 		$limit = 5;
 		$window = 60;
 
-		// Make multiple attempts
+		// Make multiple attempts at different times
+		$firstTime = $this->clock->time();
 		$this->storage->allow( $key, $limit, $window );
-		sleep( 1 );
+		$this->clock->advance( 1 );
 		$this->storage->allow( $key, $limit, $window );
-		sleep( 1 );
+		$this->clock->advance( 1 );
 		$this->storage->allow( $key, $limit, $window );
 
 		$resetTime = $this->storage->getResetTime( $key, $window );
 
-		// Reset time should be based on oldest attempt
-		$expectedReset = time() + $window - 2; // Approximately, accounting for the 2 sleeps
-		$this->assertGreaterThanOrEqual( $expectedReset - 2, $resetTime );
+		// Reset time should be based on oldest attempt (first attempt + window)
+		$expectedReset = $firstTime + $window;
+		$this->assertEquals( $expectedReset, $resetTime );
 	}
 
 	public function testAllowReturnsCorrectBooleanOnEdgeCases(): void
@@ -490,8 +494,8 @@ class FileRateLimitStorageTest extends TestCase
 		$this->storage->allow( $key, $limit, $window );
 		$this->storage->allow( $key, $limit, $window );
 
-		// Wait for attempts to expire
-		sleep( 3 );
+		// Advance time past window expiration (instant, no actual sleeping!)
+		$this->clock->advance( 3 );
 
 		// Old attempts should be filtered out, allowing new ones
 		$this->assertTrue( $this->storage->allow( $key, $limit, $window ) );
@@ -515,8 +519,8 @@ class FileRateLimitStorageTest extends TestCase
 		// Should have 3 remaining
 		$this->assertEquals( 3, $this->storage->getRemainingAttempts( $key, $limit, $window ) );
 
-		// Wait for expiry
-		sleep( 2 );
+		// Advance time past window expiration (instant, no actual sleeping!)
+		$this->clock->advance( 2 );
 
 		// Should have full limit again
 		$this->assertEquals( 5, $this->storage->getRemainingAttempts( $key, $limit, $window ) );
@@ -535,7 +539,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $tempDir,
 			'prefix' => 'ro_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		// Should still be usable
 		$this->assertTrue( $storage->allow( 'test', 5, 60 ) );
@@ -558,7 +562,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'gc_corrupt_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		// Create a file and make it corrupted
 		$key = 'corrupt_gc_key';
@@ -586,7 +590,7 @@ class FileRateLimitStorageTest extends TestCase
 
 		// Create an old file
 		$oldFile = $testDirGc . '/old_file.rl';
-		$oldData = ['attempts' => [time() - 90000]]; // Very old attempt
+		$oldData = ['attempts' => [$this->clock->time() - 90000]]; // Very old attempt
 		file_put_contents( $oldFile, json_encode( $oldData ) );
 
 		// Create storage with 100% GC probability to ensure GC runs
@@ -594,7 +598,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $testDirGc,
 			'prefix' => 'gc_',
 			'gc_probability' => 1.0 // Always run GC
-		]);
+		], $this->clock);
 
 		// File should be cleaned up by constructor's GC
 		$this->assertFileDoesNotExist( $oldFile );
@@ -628,7 +632,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $testDirExisting,
 			'prefix' => 'existing_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$this->assertDirectoryExists( $testDirExisting );
 
@@ -642,7 +646,7 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'test_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$reflection = new \ReflectionClass( $storage );
 		$method = $reflection->getMethod( 'readFile' );
@@ -658,14 +662,14 @@ class FileRateLimitStorageTest extends TestCase
 			'path' => $this->testDir,
 			'prefix' => 'write_',
 			'gc_probability' => 0
-		]);
+		], $this->clock);
 
 		$reflection = new \ReflectionClass( $storage );
 		$writeMethod = $reflection->getMethod( 'writeFile' );
 		$writeMethod->setAccessible( true );
 
 		$testFile = $this->testDir . '/write_test.rl';
-		$testData = ['attempts' => [time()]];
+		$testData = ['attempts' => [$this->clock->time()]];
 
 		$result = $writeMethod->invoke( $storage, $testFile, $testData );
 		$this->assertTrue( $result );
