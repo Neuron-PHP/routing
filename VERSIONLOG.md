@@ -1,3 +1,5 @@
+## 0.8.8
+
 ## 0.8.7 2025-12-11
 * **Rate limit storage classes now use system abstractions** - FileRateLimitStorage and MemoryRateLimitStorage refactored to use `IClock` interface
 * Added `neuron-php/core` 0.8.* dependency for system abstractions
