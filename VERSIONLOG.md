@@ -1,4 +1,4 @@
-## 0.8.8
+## 0.8.8 2025-12-27
 * Added the ability to add multiple filters to routes.
 
 ## 0.8.7 2025-12-11
