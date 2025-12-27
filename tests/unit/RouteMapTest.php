@@ -91,7 +91,7 @@ class RouteMapTest extends PHPUnit\Framework\TestCase
 		$result = $route->setFilter( 'rate-limit' );
 
 		$this->assertSame( $route, $result );
-		$this->assertEquals( 'rate-limit', $route->Filter );
+		$this->assertEquals( [ 'rate-limit' ], $route->Filters );
 	}
 
 	public function testGetName()
@@ -219,15 +219,39 @@ class RouteMapTest extends PHPUnit\Framework\TestCase
 	{
 		$route = new Routing\RouteMap( '/test', function() {} );
 
-		// Filter should be empty string when not provided
-		$this->assertEquals( '', $route->Filter );
+		// Filters should be empty array when not provided
+		$this->assertEquals( [], $route->Filters );
 	}
 
 	public function testFilterInitializationWithValue()
 	{
 		$route = new Routing\RouteMap( '/test', function() {}, 'auth' );
 
-		// Filter should be set to provided value
-		$this->assertEquals( 'auth', $route->Filter );
+		// Filters should be array with provided value
+		$this->assertEquals( [ 'auth' ], $route->Filters );
+	}
+
+	public function testGetFilters()
+	{
+		$route = new Routing\RouteMap( '/test', function() {}, [ 'auth', 'csrf' ] );
+		$this->assertEquals( [ 'auth', 'csrf' ], $route->getFilters() );
+	}
+
+	public function testSetFilters()
+	{
+		$route = new Routing\RouteMap( '/test', function() {} );
+		$result = $route->setFilters( [ 'auth', 'rate-limit' ] );
+
+		$this->assertSame( $route, $result );
+		$this->assertEquals( [ 'auth', 'rate-limit' ], $route->Filters );
+	}
+
+	public function testSetFiltersWithString()
+	{
+		$route = new Routing\RouteMap( '/test', function() {} );
+		$result = $route->setFilters( 'csrf' );
+
+		$this->assertSame( $route, $result );
+		$this->assertEquals( [ 'csrf' ], $route->Filters );
 	}
 }

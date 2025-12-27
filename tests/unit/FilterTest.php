@@ -141,4 +141,106 @@ class FilterTest extends PHPUnit\Framework\TestCase
 
 		$this->assertTrue( $Filter );
 	}
+
+	public function testMultipleFilters()
+	{
+		$executionOrder = [];
+
+		$this->Router->registerFilter(
+			'FilterOne',
+			new Routing\Filter(
+				function() use ( &$executionOrder ) { $executionOrder[] = 'one-pre'; }
+			)
+		);
+
+		$this->Router->registerFilter(
+			'FilterTwo',
+			new Routing\Filter(
+				function() use ( &$executionOrder ) { $executionOrder[] = 'two-pre'; }
+			)
+		);
+
+		$this->Router->get(
+			'/test',
+			function() use ( &$executionOrder ) { $executionOrder[] = 'route'; },
+			[ 'FilterOne', 'FilterTwo' ]
+		);
+
+		$Route = $this->Router->getRoute(
+			Routing\RequestMethod::GET,
+			'/test'
+		);
+
+		$this->Router->dispatch( $Route );
+
+		$this->assertEquals( [ 'one-pre', 'two-pre', 'route' ], $executionOrder );
+	}
+
+	public function testMultipleFiltersWithPost()
+	{
+		$executionOrder = [];
+
+		$this->Router->registerFilter(
+			'FilterOne',
+			new Routing\Filter(
+				function() use ( &$executionOrder ) { $executionOrder[] = 'one-pre'; },
+				function() use ( &$executionOrder ) { $executionOrder[] = 'one-post'; }
+			)
+		);
+
+		$this->Router->registerFilter(
+			'FilterTwo',
+			new Routing\Filter(
+				function() use ( &$executionOrder ) { $executionOrder[] = 'two-pre'; },
+				function() use ( &$executionOrder ) { $executionOrder[] = 'two-post'; }
+			)
+		);
+
+		$this->Router->get(
+			'/test',
+			function() use ( &$executionOrder ) { $executionOrder[] = 'route'; return 'result'; },
+			[ 'FilterOne', 'FilterTwo' ]
+		);
+
+		$Route = $this->Router->getRoute(
+			Routing\RequestMethod::GET,
+			'/test'
+		);
+
+		$this->Router->dispatch( $Route );
+
+		// Pre-filters execute in order, route executes, post-filters execute in reverse (LIFO)
+		$this->assertEquals(
+			[ 'one-pre', 'two-pre', 'route', 'two-post', 'one-post' ],
+			$executionOrder
+		);
+	}
+
+	public function testBackwardCompatibilityWithStringFilter()
+	{
+		$Filter = false;
+
+		$this->Router->registerFilter(
+			'TestFilter',
+			new Routing\Filter(
+				function() use ( &$Filter ) { $Filter = true; }
+			)
+		);
+
+		// Test that string filter still works (backward compatibility)
+		$this->Router->get(
+			'/test',
+			function(){},
+			'TestFilter'
+		);
+
+		$Route = $this->Router->getRoute(
+			Routing\RequestMethod::GET,
+			'/test'
+		);
+
+		$this->Router->dispatch( $Route );
+
+		$this->assertTrue( $Filter );
+	}
 }
