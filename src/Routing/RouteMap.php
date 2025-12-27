@@ -42,7 +42,7 @@ class RouteMap
 	public string $Path;
 	public $Function;
 	public array $Parameters;
-	public string $Filter;
+	public array $Filters;
 	public string $Name;
 	public array $Payload;
 
@@ -50,11 +50,11 @@ class RouteMap
 	 * RouteMap constructor.
 	 * @param $path string route path i.e. /part/new or /part/:id
 	 * @param $function callable the function to call on a matching route.
-	 * @param $filter string the name of the filter to match with this route.
+	 * @param $filters string|array the name(s) of the filter(s) to match with this route.
 	 * @throws Exception
 	 */
 
-	public function __construct( string $path, callable $function, string $filter = '' )
+	public function __construct( string $path, callable $function, string|array $filters = '' )
 	{
 		if( !is_callable( $function ) )
 		{
@@ -64,7 +64,17 @@ class RouteMap
 		$this->Path       = $path;
 		$this->Function   = $function;
 		$this->Parameters = [];
-		$this->Filter     = $filter;
+
+		// Support both string (legacy) and array (new) filter specification
+		if( is_string( $filters ) )
+		{
+			$this->Filters = $filters === '' ? [] : [ $filters ];
+		}
+		else
+		{
+			$this->Filters = $filters;
+		}
+
 		$this->Name       = '';
 		$this->Payload    = [];
 	}
@@ -124,21 +134,51 @@ class RouteMap
 	}
 
 	/**
-	 * @return string|null
+	 * Get filters for this route
+	 * @return array
 	 */
-	public function getFilter()
+	public function getFilters(): array
 	{
-		return $this->Filter;
+		return $this->Filters;
 	}
 
 	/**
+	 * Set filters for this route
+	 * @param string|array $filters
+	 * @return RouteMap
+	 */
+	public function setFilters( string|array $filters ) : RouteMap
+	{
+		if( is_string( $filters ) )
+		{
+			$this->Filters = $filters === '' ? [] : [ $filters ];
+		}
+		else
+		{
+			$this->Filters = $filters;
+		}
+		return $this;
+	}
+
+	/**
+	 * Legacy method for backward compatibility
+	 * @deprecated Use getFilters() instead
+	 * @return string|null
+	 */
+	public function getFilter(): ?string
+	{
+		return count( $this->Filters ) > 0 ? $this->Filters[0] : null;
+	}
+
+	/**
+	 * Legacy method for backward compatibility
+	 * @deprecated Use setFilters() instead
 	 * @param string $filter
 	 * @return RouteMap
 	 */
 	public function setFilter( string $filter ) : RouteMap
 	{
-		$this->Filter = $filter;
-		return $this;
+		return $this->setFilters( $filter );
 	}
 
 	/**
@@ -236,23 +276,26 @@ class RouteMap
 	 */
 	public function execute( Router $router ): mixed
 	{
-		$filter = null;
+		$filters = [];
 
-		if( $this->Filter )
+		// Get all filter instances for this route
+		foreach( $this->Filters as $filterName )
 		{
-			$filter = $router->getFilter( $this->Filter );
+			$filters[] = $router->getFilter( $filterName );
 		}
 
-		if( $filter )
+		// Execute pre-filters in order
+		foreach( $filters as $filter )
 		{
 			$filter->pre( $this );
 		}
 
+		// Execute route function
 		$function = $this->Function;
-
 		$result = $function( $this->Parameters );
 
-		if( $filter )
+		// Execute post-filters in reverse order (LIFO)
+		foreach( array_reverse( $filters ) as $filter )
 		{
 			$filter->post( $this );
 		}

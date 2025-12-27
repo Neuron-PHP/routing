@@ -107,13 +107,13 @@ class Router extends Memory implements IRunnable
 	 * @param array $routes
 	 * @param string $routeName
 	 * @param $function
-	 * @param $filter
+	 * @param $filters string|array
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$routes, string $routeName, $function, $filter ) : RouteMap
+	protected function addRoute( array &$routes, string $routeName, $function, string|array $filters ) : RouteMap
 	{
-		$route    = new RouteMap( $routeName, $function, $filter ?? '' );
+		$route    = new RouteMap( $routeName, $function, $filters ?? '' );
 		$routes[] = $route;
 
 		return $route;
@@ -122,49 +122,49 @@ class Router extends Memory implements IRunnable
 	/**
 	 * @param string $route
 	 * @param $function
-	 * @param string|null $filter |null $filter
+	 * @param string|array|null $filters
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function delete( string $route, $function, ?string $filter = null ) : RouteMap
+	public function delete( string $route, $function, string|array|null $filters = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_delete, $route, $function, $filter );
+		return $this->addRoute( $this->_delete, $route, $function, $filters ?? '' );
 	}
 
 	/**
 	 * @param string $route
 	 * @param $function
-	 * @param string|null $filter |null $filter
+	 * @param string|array|null $filters
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function get( string $route, $function, ?string $filter = null ) : RouteMap
+	public function get( string $route, $function, string|array|null $filters = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_get, $route, $function, $filter );
+		return $this->addRoute( $this->_get, $route, $function, $filters ?? '' );
 	}
 
 	/**
 	 * @param string $route
 	 * @param $function
-	 * @param string|null $filter
+	 * @param string|array|null $filters
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function post( string $route, $function, ?string $filter = null ) : RouteMap
+	public function post( string $route, $function, string|array|null $filters = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_post, $route, $function, $filter );
+		return $this->addRoute( $this->_post, $route, $function, $filters ?? '' );
 	}
 
 	/**
 	 * @param string $route
 	 * @param $function
-	 * @param string|null $filter |null $filter
+	 * @param string|array|null $filters
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function put( string $route, $function, ?string $filter = null ) : RouteMap
+	public function put( string $route, $function, string|array|null $filters = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_put, $route, $function, $filter );
+		return $this->addRoute( $this->_put, $route, $function, $filters ?? '' );
 	}
 
 	/**

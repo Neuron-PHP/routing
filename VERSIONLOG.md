@@ -1,4 +1,5 @@
 ## 0.8.8
+* Added the ability to add multiple filters to routes.
 
 ## 0.8.7 2025-12-11
 * **Rate limit storage classes now use system abstractions** - FileRateLimitStorage and MemoryRateLimitStorage refactored to use `IClock` interface
