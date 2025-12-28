@@ -159,6 +159,7 @@ class RouteScanner
 	protected function findClassesInDirectory( string $directory, string $namespace ): array
 	{
 		$classes = [];
+		$directory = rtrim( $directory, '/\\' );
 		$iterator = new \RecursiveIteratorIterator(
 			new \RecursiveDirectoryIterator( $directory )
 		);
@@ -167,9 +168,13 @@ class RouteScanner
 		{
 			if( $file->isFile() && $file->getExtension() === 'php' )
 			{
-				$relativePath = str_replace( $directory . '/', '', $file->getPathname() );
+				$relativePath = str_replace(
+					$directory . DIRECTORY_SEPARATOR,
+					'',
+					$file->getPathname()
+				);
 				$relativePath = str_replace( '.php', '', $relativePath );
-				$className = $namespace . '\\' . str_replace( '/', '\\', $relativePath );
+				$className = $namespace . '\\' . str_replace( DIRECTORY_SEPARATOR, '\\', $relativePath );
 
 				if( class_exists( $className ) )
 				{
