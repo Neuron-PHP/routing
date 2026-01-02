@@ -113,6 +113,12 @@ class Router extends Memory implements IRunnable
 	 */
 	protected function addRoute( array &$routes, string $routeName, $function, string|array $filters ) : RouteMap
 	{
+		// Normalize route path: strip trailing slashes (except for root "/")
+		if( strlen( $routeName ) > 1 && $routeName[ strlen( $routeName ) - 1 ] == "/" )
+		{
+			$routeName = substr( $routeName, 0, -1 );
+		}
+
 		$route    = new RouteMap( $routeName, $function, $filters ?? '' );
 		$routes[] = $route;
 
