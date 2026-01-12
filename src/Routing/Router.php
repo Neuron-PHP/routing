@@ -235,16 +235,18 @@ class Router extends Memory implements IRunnable
 		// Set router context so the route can register names for duplicate detection
 		$route->setRouterContext( $this, $method );
 
-		// Set the route name if provided (this will trigger duplicate name check)
-		if( $name )
-		{
-			$route->setName( $name );
-		}
-
-		// Check for duplicate path+method combinations if strict mode is enabled
+		// Check for duplicate path+method combinations BEFORE setting the name
+		// This ensures that if the path check throws, no name gets registered
 		if( $this->_strictMode )
 		{
 			$this->checkDuplicateRoute( $route, $method );
+		}
+
+		// Set the route name if provided (this will trigger duplicate name check)
+		// This is done AFTER path checking to avoid leaving stale names on error
+		if( $name )
+		{
+			$route->setName( $name );
 		}
 
 		$routes[] = $route;
@@ -295,6 +297,20 @@ class Router extends Memory implements IRunnable
 
 		// Register the name
 		$this->_registeredNames[ $name ] = "{$method}:{$path}";
+	}
+
+	/**
+	 * Unregister a route name (called by RouteMap::setName when renaming).
+	 *
+	 * This method is called when a route's name is being changed, allowing
+	 * the old name to be removed from the registry before registering the new name.
+	 *
+	 * @param string $name The route name to unregister
+	 * @return void
+	 */
+	public function unregisterRouteName( string $name ): void
+	{
+		unset( $this->_registeredNames[ $name ] );
 	}
 
 	/**

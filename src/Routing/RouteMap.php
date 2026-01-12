@@ -211,15 +211,28 @@ class RouteMap
 	/**
 	 * Set the name for this route and register it with the router for duplicate detection.
 	 *
-	 * @param mixed $name
+	 * @param string $name
 	 * @return RouteMap
 	 * @throws Exceptions\DuplicateRouteException If name is already in use
 	 */
-	public function setName( $name ) : RouteMap
+	public function setName( string $name ) : RouteMap
 	{
-		// If router context is set, register the name for duplicate detection
+		// If the name is already set to this value, no need to re-register
+		if( $this->Name === $name )
+		{
+			return $this;
+		}
+
+		// If router context is set, unregister old name and register the new one
 		if( $this->_router && $this->_method )
 		{
+			// Unregister the old name if one exists
+			if( $this->Name !== '' )
+			{
+				$this->_router->unregisterRouteName( $this->Name );
+			}
+
+			// Register the new name (will check for duplicates)
 			$this->_router->registerRouteName( $name, $this->_method, $this->Path, $this );
 		}
 
