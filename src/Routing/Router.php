@@ -866,6 +866,13 @@ class Router extends Memory implements IRunnable
 
 		$uri = $argv[ 'route' ];
 
+		// Normalize empty route to root path
+		// When .htaccess passes ?route= with no value, normalize to '/'
+		if( $uri === '' )
+		{
+			$uri = '/';
+		}
+
 		// Apply URL rewrites before route matching
 		$uri = $this->rewriteUrl( $uri );
 
