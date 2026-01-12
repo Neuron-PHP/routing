@@ -263,7 +263,7 @@ rewrites:
 
 ### How It Works
 
-```
+```text
 1. Client requests: http://example.com/
 2. Router receives: /
 3. Rewrite applied: / → /home
@@ -338,7 +338,7 @@ public function list() { }
 ```
 
 **Error Message:**
-```
+```text
 Duplicate route detected: GET /users
   First:  App\Controllers\UserController@index
   Second: App\Controllers\UserController@list
@@ -357,7 +357,7 @@ public function store() { }
 ```
 
 **Error Message:**
-```
+```text
 Duplicate route name detected: 'users'
   First:  GET /users → App\Controllers\UserController@index
   Second: POST /users/create → App\Controllers\UserController@store

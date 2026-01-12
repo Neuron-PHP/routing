@@ -14,32 +14,40 @@ use Exception;
  */
 class DuplicateRouteException extends Exception
 {
-	private string $routeMethod;
-	private string $routePath;
+	private string $firstMethod;
+	private string $firstPath;
 	private string $firstDefinition;
+	private string $secondMethod;
+	private string $secondPath;
 	private string $secondDefinition;
 	private ?string $routeName;
 
 	/**
 	 * Create a new duplicate route exception.
 	 *
-	 * @param string $method HTTP method (GET, POST, etc.)
-	 * @param string $path Route path (e.g., /users/:id)
+	 * @param string $firstMethod First route's HTTP method (GET, POST, etc.)
+	 * @param string $firstPath First route's path (e.g., /users/:id)
 	 * @param string $first First route definition (controller@method)
+	 * @param string $secondMethod Second route's HTTP method
+	 * @param string $secondPath Second route's path
 	 * @param string $second Second (duplicate) route definition
 	 * @param string|null $name Optional route name if the conflict is name-based
 	 */
 	public function __construct(
-		string $method,
-		string $path,
+		string $firstMethod,
+		string $firstPath,
 		string $first,
+		string $secondMethod,
+		string $secondPath,
 		string $second,
 		?string $name = null
 	)
 	{
-		$this->routeMethod = $method;
-		$this->routePath = $path;
+		$this->firstMethod = $firstMethod;
+		$this->firstPath = $firstPath;
 		$this->firstDefinition = $first;
+		$this->secondMethod = $secondMethod;
+		$this->secondPath = $secondPath;
 		$this->secondDefinition = $second;
 		$this->routeName = $name;
 
@@ -62,11 +70,11 @@ class DuplicateRouteException extends Exception
 				"  Second: %s %s → %s\n" .
 				"Suggestion: Use different route names or remove one of the routes.",
 				$this->routeName,
-				$this->routeMethod,
-				$this->routePath,
+				$this->firstMethod,
+				$this->firstPath,
 				$this->firstDefinition,
-				$this->routeMethod,
-				$this->routePath,
+				$this->secondMethod,
+				$this->secondPath,
 				$this->secondDefinition
 			);
 		}
@@ -76,31 +84,51 @@ class DuplicateRouteException extends Exception
 			"  First:  %s\n" .
 			"  Second: %s\n" .
 			"Suggestion: Use different paths, different HTTP methods, or combine into one controller method.",
-			$this->routeMethod,
-			$this->routePath,
+			$this->secondMethod,
+			$this->secondPath,
 			$this->firstDefinition,
 			$this->secondDefinition
 		);
 	}
 
 	/**
-	 * Get the HTTP method of the duplicate route.
+	 * Get the HTTP method of the first route.
 	 *
 	 * @return string
 	 */
-	public function getRouteMethod(): string
+	public function getFirstMethod(): string
 	{
-		return $this->routeMethod;
+		return $this->firstMethod;
 	}
 
 	/**
-	 * Get the path of the duplicate route.
+	 * Get the path of the first route.
 	 *
 	 * @return string
 	 */
-	public function getRoutePath(): string
+	public function getFirstPath(): string
 	{
-		return $this->routePath;
+		return $this->firstPath;
+	}
+
+	/**
+	 * Get the HTTP method of the second route.
+	 *
+	 * @return string
+	 */
+	public function getSecondMethod(): string
+	{
+		return $this->secondMethod;
+	}
+
+	/**
+	 * Get the path of the second route.
+	 *
+	 * @return string
+	 */
+	public function getSecondPath(): string
+	{
+		return $this->secondPath;
 	}
 
 	/**

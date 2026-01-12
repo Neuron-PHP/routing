@@ -218,10 +218,11 @@ class Router extends Memory implements IRunnable
 	 * @param string $routeName
 	 * @param $function
 	 * @param $filters string|array
+	 * @param string|null $name Optional route name (for duplicate detection)
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	protected function addRoute( array &$routes, string $method, string $routeName, $function, string|array $filters ) : RouteMap
+	protected function addRoute( array &$routes, string $method, string $routeName, $function, string|array $filters, ?string $name = null ) : RouteMap
 	{
 		// Normalize route path: strip trailing slashes (except for root "/")
 		if( strlen( $routeName ) > 1 && $routeName[ strlen( $routeName ) - 1 ] == "/" )
@@ -230,6 +231,12 @@ class Router extends Memory implements IRunnable
 		}
 
 		$route    = new RouteMap( $routeName, $function, $filters ?? '' );
+
+		// Set the route name BEFORE checking for duplicates
+		if( $name )
+		{
+			$route->setName( $name );
+		}
 
 		// Check for duplicate routes if strict mode is enabled
 		if( $this->_strictMode )
@@ -258,10 +265,13 @@ class Router extends Memory implements IRunnable
 		// Check for duplicate method+path combination
 		if( isset( $this->_registeredRoutes[ $signature ] ) )
 		{
+			// First route has same method and path as the new route
 			throw new Exceptions\DuplicateRouteException(
-				$method,
-				$path,
+				$method,  // First route method (same as second)
+				$path,    // First route path (same as second)
 				$this->_registeredRoutes[ $signature ],
+				$method,  // Second route method
+				$path,    // Second route path
 				$this->extractControllerInfo( $route ),
 				null
 			);
@@ -271,10 +281,16 @@ class Router extends Memory implements IRunnable
 		$name = $route->getName();
 		if( $name && isset( $this->_registeredNames[ $name ] ) )
 		{
+			// Parse the original route's signature to get method and path
+			$originalSignature = $this->_registeredNames[ $name ];
+			list( $originalMethod, $originalPath ) = explode( ':', $originalSignature, 2 );
+
 			throw new Exceptions\DuplicateRouteException(
-				$method,
-				$path,
-				$this->_registeredRoutes[ $this->_registeredNames[ $name ] ],
+				$originalMethod,  // First route method
+				$originalPath,    // First route path
+				$this->_registeredRoutes[ $originalSignature ],
+				$method,          // Second route method
+				$path,            // Second route path
 				$this->extractControllerInfo( $route ),
 				$name
 			);
@@ -311,48 +327,52 @@ class Router extends Memory implements IRunnable
 	 * @param string $route
 	 * @param $function
 	 * @param string|array|null $filters
+	 * @param string|null $name
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function delete( string $route, $function, string|array|null $filters = null ) : RouteMap
+	public function delete( string $route, $function, string|array|null $filters = null, ?string $name = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_delete, 'DELETE', $route, $function, $filters ?? '' );
+		return $this->addRoute( $this->_delete, 'DELETE', $route, $function, $filters ?? '', $name );
 	}
 
 	/**
 	 * @param string $route
 	 * @param $function
 	 * @param string|array|null $filters
+	 * @param string|null $name
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function get( string $route, $function, string|array|null $filters = null ) : RouteMap
+	public function get( string $route, $function, string|array|null $filters = null, ?string $name = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_get, 'GET', $route, $function, $filters ?? '' );
+		return $this->addRoute( $this->_get, 'GET', $route, $function, $filters ?? '', $name );
 	}
 
 	/**
 	 * @param string $route
 	 * @param $function
 	 * @param string|array|null $filters
+	 * @param string|null $name
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function post( string $route, $function, string|array|null $filters = null ) : RouteMap
+	public function post( string $route, $function, string|array|null $filters = null, ?string $name = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_post, 'POST', $route, $function, $filters ?? '' );
+		return $this->addRoute( $this->_post, 'POST', $route, $function, $filters ?? '', $name );
 	}
 
 	/**
 	 * @param string $route
 	 * @param $function
 	 * @param string|array|null $filters
+	 * @param string|null $name
 	 * @return RouteMap
 	 * @throws \Exception
 	 */
-	public function put( string $route, $function, string|array|null $filters = null ) : RouteMap
+	public function put( string $route, $function, string|array|null $filters = null, ?string $name = null ) : RouteMap
 	{
-		return $this->addRoute( $this->_put, 'PUT', $route, $function, $filters ?? '' );
+		return $this->addRoute( $this->_put, 'PUT', $route, $function, $filters ?? '', $name );
 	}
 
 	/**
