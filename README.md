@@ -174,25 +174,27 @@ public function getUsers()
 
 #### Enable Attribute Routing in MVC Application
 
-Add controller paths to your `config/neuron.yaml`:
+Add controller paths to your `config/routing.yaml`:
+
+```yaml
+# config/routing.yaml
+controller_paths:
+  - path: 'src/Controllers'
+    namespace: 'App\Controllers'
+  - path: 'src/Admin/Controllers'
+    namespace: 'App\Admin\Controllers'
+```
+
+For backward compatibility, controller paths can also be configured in `config/neuron.yaml`:
 
 ```yaml
 routing:
   controller_paths:
     - path: 'src/Controllers'
       namespace: 'App\Controllers'
-    - path: 'src/Admin/Controllers'
-      namespace: 'App\Admin\Controllers'
 ```
 
-#### Hybrid Approach (YAML + Attributes)
-
-You can use both YAML routes and attribute routes together:
-
-- **YAML routes**: Legacy routes, package-provided routes
-- **Attribute routes**: New application routes
-
-The MVC Application will load both automatically.
+**Note:** If both files exist, `routing.yaml` takes precedence.
 
 ### Benefits
 
@@ -233,6 +235,190 @@ class Home
 ```
 
 See `tests/unit/RouteScannerTest.php` for working examples of basic route definition, route groups with prefixes, filter composition, and multiple routes per method.
+
+## URL Rewrites
+
+URL rewrites provide transparent URL rewriting before route matching. Unlike HTTP redirects (301/302), rewrites are internal and invisible to the client—the browser URL stays the same while the application routes to a different path.
+
+### Use Cases
+
+- **Override Package Routes**: Applications can override default routes from packages (e.g., CMS homepage)
+- **Legacy URL Support**: Support old URLs without creating duplicate routes
+- **Clean URLs**: Map user-friendly URLs to internal route structures
+- **Environment-Specific Routing**: Different rewrites for dev/staging/production
+
+### Configuration
+
+Add rewrites to `config/routing.yaml`:
+
+```yaml
+# config/routing.yaml
+rewrites:
+  '/': '/home'                    # Root goes to custom homepage
+  '/index': '/home'               # Legacy URL support
+  '/index.php': '/home'           # Handle old PHP URLs
+  '/blog': '/posts'               # URL aliasing
+  '/about-us': '/company/about'  # Clean URL to internal structure
+```
+
+### How It Works
+
+```text
+1. Client requests: http://example.com/
+2. Router receives: /
+3. Rewrite applied: / → /home
+4. Route matching: Finds route for /home
+5. Response sent to client
+6. Browser still shows: http://example.com/
+```
+
+### Example: CMS Homepage Override
+
+**Problem:** CMS defines `GET /` but you want a custom homepage.
+
+**Solution:**
+```yaml
+# config/routing.yaml
+rewrites:
+  '/': '/custom/landing'  # Rewrite root to your controller
+
+controller_paths:
+  - path: 'app/Controllers'        # Your controllers first
+    namespace: 'App\Controllers'
+  - path: 'vendor/neuron-php/cms/src/Cms/Controllers'
+    namespace: 'Neuron\Cms\Controllers'
+```
+
+```php
+// app/Controllers/Landing.php
+class Landing extends Controller
+{
+    #[Get('/custom/landing', name: 'landing')]
+    public function index()
+    {
+        return $this->renderHtml(OK, [], 'custom-home');
+    }
+}
+```
+
+Now requests to `/` are transparently routed to your custom landing page without any HTTP redirect.
+
+### Rewrite Rules
+
+- **Exact Match Only**: Rewrites use exact string matching, no wildcards or regex
+- **Applied Before Route Matching**: Rewrites happen before the router looks for routes
+- **Original URL Preserved**: Client never sees the rewritten URL
+- **Logging**: Rewrites are logged at debug level for troubleshooting
+
+### vs. HTTP Redirects
+
+| Feature | URL Rewrite | HTTP Redirect |
+|---------|-------------|---------------|
+| **Client Visible** | No | Yes |
+| **HTTP Request Count** | 1 | 2 |
+| **Performance** | Fast | Slower |
+| **SEO Impact** | None | Can affect SEO |
+| **Use Case** | Internal routing | Moved content |
+
+## Duplicate Route Detection
+
+The router includes strict duplicate route detection to catch configuration errors early and prevent hard-to-debug routing issues.
+
+### What Gets Detected
+
+#### 1. Duplicate Method + Path
+
+```php
+// ❌ ERROR: Duplicate route
+#[Get('/users')]
+public function index() { }
+
+#[Get('/users')]  // Same method + path
+public function list() { }
+```
+
+**Error Message:**
+```text
+Duplicate route detected: GET /users
+  First:  App\Controllers\UserController@index
+  Second: App\Controllers\UserController@list
+Suggestion: Use different paths, different HTTP methods, or combine into one controller method.
+```
+
+#### 2. Duplicate Route Names
+
+```php
+// ❌ ERROR: Duplicate name
+#[Get('/users', name: 'users')]
+public function index() { }
+
+#[Post('/users/create', name: 'users')]  // Same name
+public function store() { }
+```
+
+**Error Message:**
+```text
+Duplicate route name detected: 'users'
+  First:  GET /users → App\Controllers\UserController@index
+  Second: POST /users/create → App\Controllers\UserController@store
+Suggestion: Use different route names or remove one of the routes.
+```
+
+### What's Allowed
+
+#### Different HTTP Methods (RESTful)
+
+```php
+// ✅ ALLOWED: Same path, different methods
+#[Get('/users', name: 'users.index')]
+public function index() { }
+
+#[Post('/users', name: 'users.store')]
+public function store() { }
+```
+
+This is standard RESTful routing and is fully supported.
+
+#### Multiple Attributes on Same Method (Aliases)
+
+```php
+// ✅ ALLOWED: Multiple routes to same handler
+#[Get('/user/:id')]
+#[Get('/profile/:id')]
+#[Get('/member/:id')]
+public function show($id)
+{
+    // Backward compatibility or URL aliasing
+}
+```
+
+### Configuration
+
+Strict mode is **enabled by default**. To disable (not recommended):
+
+```php
+$router = Router::instance();
+$router->setStrictMode(false);  // Allow duplicates (first match wins)
+```
+
+### Benefits
+
+- **Catches Errors Early**: Fails at application boot, not during user requests
+- **Clear Error Messages**: Shows both conflicting routes with file locations
+- **Prevents Production Bugs**: No silent overwrites or unexpected behavior
+- **Developer-Friendly**: Suggests solutions in error messages
+
+### Why This Matters
+
+**Without duplicate detection:**
+- Same route defined twice? Second silently ignored, first wins
+- Same name used twice? URL generation picks random route
+- Debugging nightmare when routes mysteriously don't work
+
+**With duplicate detection:**
+- Application fails to start with clear error
+- Developer fixes the conflict immediately
+- Production deployments are safer
 
 ## Rate Limiting
 
