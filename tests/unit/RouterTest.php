@@ -643,4 +643,73 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		$url = $this->Router->generateUrl( 'nonexistent', [] );
 		$this->assertNull( $url );
 	}
+
+	public function testDuplicateRoutePath()
+	{
+		$this->expectException( Routing\Exceptions\DuplicateRouteException::class );
+
+		// First route
+		$this->Router->get( '/users/:id', function() { return 'first'; } );
+
+		// Second route with same path and method
+		$this->Router->get( '/users/:id', function() { return 'second'; } );
+	}
+
+	public function testDuplicateRouteNameViaFluentApi()
+	{
+		$this->expectException( Routing\Exceptions\DuplicateRouteException::class );
+		$this->expectExceptionMessage( 'user.show' );
+
+		// First route with name
+		$this->Router->get( '/users/:id', function() { return 'first'; } )
+			->setName( 'user.show' );
+
+		// Second route with same name (via fluent API)
+		$this->Router->get( '/users/:slug', function() { return 'second'; } )
+			->setName( 'user.show' );
+	}
+
+	public function testDuplicateRouteNameViaParameter()
+	{
+		$this->expectException( Routing\Exceptions\DuplicateRouteException::class );
+		$this->expectExceptionMessage( 'user.show' );
+
+		// First route with name via parameter
+		$this->Router->get( '/users/:id', function() { return 'first'; }, null, 'user.show' );
+
+		// Second route with same name via parameter
+		$this->Router->get( '/users/:slug', function() { return 'second'; }, null, 'user.show' );
+	}
+
+	public function testDuplicateRouteNameAcrossMethods()
+	{
+		$this->expectException( Routing\Exceptions\DuplicateRouteException::class );
+		$this->expectExceptionMessage( 'user.action' );
+
+		// First route: GET /users
+		$this->Router->get( '/users', function() { return 'get'; } )
+			->setName( 'user.action' );
+
+		// Second route: POST /users with same name
+		$this->Router->post( '/users', function() { return 'post'; } )
+			->setName( 'user.action' );
+	}
+
+	public function testStrictModeDisabled()
+	{
+		// Disable strict mode
+		$this->Router->setStrictMode( false );
+
+		// These should NOT throw exceptions now
+		$this->Router->get( '/users/:id', function() { return 'first'; } );
+		$this->Router->get( '/users/:id', function() { return 'second'; } );
+
+		$this->Router->get( '/posts/:id', function() { return 'first'; } )
+			->setName( 'post.show' );
+		$this->Router->get( '/posts/:slug', function() { return 'second'; } )
+			->setName( 'post.show' );
+
+		// Just verify no exception was thrown
+		$this->assertTrue( true );
+	}
 }

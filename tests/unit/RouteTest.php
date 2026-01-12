@@ -13,6 +13,13 @@ class RouteTest extends TestCase
 		parent::setUp();
 	}
 
+	protected function tearDown(): void
+	{
+		// Clear routes between tests to prevent duplicate route errors
+		Routing\Router::getInstance()->clearRoutes();
+		parent::tearDown();
+	}
+
 	public function testDelete()
 	{
 		Routing\Route::delete(
