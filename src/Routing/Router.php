@@ -83,12 +83,108 @@ class Router extends Memory implements IRunnable
 	 * a DuplicateRouteException. When disabled, duplicates are silently
 	 * allowed (first match wins behavior).
 	 *
+	 * When enabling strict mode, this method validates all existing routes
+	 * and throws an exception if any duplicates are found.
+	 *
 	 * @param bool $strict Enable strict duplicate checking
 	 * @return void
+	 * @throws Exceptions\DuplicateRouteException If duplicates exist when enabling strict mode
 	 */
 	public function setStrictMode( bool $strict ): void
 	{
+		// If enabling strict mode, validate existing routes for duplicates
+		if( $strict && !$this->_strictMode )
+		{
+			$this->validateExistingRoutes();
+		}
+
 		$this->_strictMode = $strict;
+	}
+
+	/**
+	 * Validate all existing routes for duplicates.
+	 *
+	 * This rebuilds the route and name registries from scratch and throws
+	 * an exception if any duplicates are found.
+	 *
+	 * @return void
+	 * @throws Exceptions\DuplicateRouteException If duplicates are found
+	 */
+	protected function validateExistingRoutes(): void
+	{
+		// Temporarily clear registries to rebuild from scratch
+		$tempRoutes = $this->_registeredRoutes;
+		$tempNames = $this->_registeredNames;
+		$this->_registeredRoutes = [];
+		$this->_registeredNames = [];
+
+		try
+		{
+			// Check all routes across all HTTP methods
+			$allRouteMaps = [
+				'GET' => $this->_get,
+				'POST' => $this->_post,
+				'PUT' => $this->_put,
+				'DELETE' => $this->_delete
+			];
+
+			foreach( $allRouteMaps as $method => $routes )
+			{
+				foreach( $routes as $route )
+				{
+					$path = $route->getPath();
+					$signature = "{$method}:{$path}";
+
+					// Check for duplicate method+path
+					if( isset( $this->_registeredRoutes[ $signature ] ) )
+					{
+						throw new Exceptions\DuplicateRouteException(
+							$method,
+							$path,
+							$this->_registeredRoutes[ $signature ],
+							$method,
+							$path,
+							$this->extractControllerInfo( $route ),
+							null
+						);
+					}
+
+					// Register the route
+					$this->_registeredRoutes[ $signature ] = $this->extractControllerInfo( $route );
+
+					// Check for duplicate name
+					$name = $route->getName();
+					if( $name && isset( $this->_registeredNames[ $name ] ) )
+					{
+						$originalSignature = $this->_registeredNames[ $name ];
+						list( $originalMethod, $originalPath ) = explode( ':', $originalSignature, 2 );
+
+						throw new Exceptions\DuplicateRouteException(
+							$originalMethod,
+							$originalPath,
+							$this->_registeredRoutes[ $originalSignature ] ?? 'unknown controller',
+							$method,
+							$path,
+							$this->extractControllerInfo( $route ),
+							$name
+						);
+					}
+
+					// Register the name
+					if( $name )
+					{
+						$this->_registeredNames[ $name ] = $signature;
+					}
+				}
+			}
+		}
+		catch( Exceptions\DuplicateRouteException $e )
+		{
+			// Restore original registries and re-throw
+			$this->_registeredRoutes = $tempRoutes;
+			$this->_registeredNames = $tempNames;
+			throw $e;
+		}
 	}
 
 	/**
@@ -107,6 +203,7 @@ class Router extends Memory implements IRunnable
 		$this->_post = [];
 		$this->_put = [];
 		$this->_filter = [];
+		$this->_filterRegistry = [];
 		$this->_registeredRoutes = [];
 		$this->_registeredNames = [];
 		$this->_urlRewrites = [];
@@ -156,18 +253,60 @@ class Router extends Memory implements IRunnable
 			$normalizedUrl = substr( $url, 0, -1 );
 		}
 
+		// Sanitize URL for logging (remove query strings and fragments)
+		$sanitizedUrl = $this->sanitizeUrlForLogging( $normalizedUrl );
+
 		// Check for exact match rewrite
 		if( isset( $this->_urlRewrites[ $normalizedUrl ] ) )
 		{
-			Log::debug( "URL rewrite: {$url} -> {$this->_urlRewrites[$normalizedUrl]}" );
+			Log::debug( "URL rewrite: {$sanitizedUrl} -> {$this->_urlRewrites[$normalizedUrl]}" );
 			return $this->_urlRewrites[ $normalizedUrl ];
 		}
 
 		// Also check the original URL (with trailing slash if present)
 		if( $normalizedUrl !== $url && isset( $this->_urlRewrites[ $url ] ) )
 		{
-			Log::debug( "URL rewrite: {$url} -> {$this->_urlRewrites[$url]}" );
+			Log::debug( "URL rewrite: {$sanitizedUrl} -> {$this->_urlRewrites[$url]}" );
 			return $this->_urlRewrites[ $url ];
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Sanitize a URL for logging by removing query strings and fragments.
+	 *
+	 * This prevents sensitive tokens, API keys, or other data from being
+	 * logged inadvertently.
+	 *
+	 * @param string $url The URL to sanitize
+	 * @return string The sanitized URL (path only)
+	 */
+	protected function sanitizeUrlForLogging( string $url ): string
+	{
+		// Find the first occurrence of '?' or '#'
+		$queryPos = strpos( $url, '?' );
+		$fragmentPos = strpos( $url, '#' );
+
+		// Determine where to truncate
+		$truncatePos = false;
+		if( $queryPos !== false && $fragmentPos !== false )
+		{
+			$truncatePos = min( $queryPos, $fragmentPos );
+		}
+		else if( $queryPos !== false )
+		{
+			$truncatePos = $queryPos;
+		}
+		else if( $fragmentPos !== false )
+		{
+			$truncatePos = $fragmentPos;
+		}
+
+		// Truncate if needed
+		if( $truncatePos !== false )
+		{
+			return substr( $url, 0, $truncatePos );
 		}
 
 		return $url;
@@ -235,18 +374,25 @@ class Router extends Memory implements IRunnable
 		// Set router context so the route can register names for duplicate detection
 		$route->setRouterContext( $this, $method );
 
-		// Check for duplicate path+method combinations BEFORE setting the name
-		// This ensures that if the path check throws, no name gets registered
-		if( $this->_strictMode )
-		{
-			$this->checkDuplicateRoute( $route, $method );
-		}
+		// Always check for duplicate path+method combinations (registers signature)
+		// In strict mode this throws on duplicates, in non-strict mode first match wins
+		$this->checkDuplicateRoute( $route, $method );
 
 		// Set the route name if provided (this will trigger duplicate name check)
-		// This is done AFTER path checking to avoid leaving stale names on error
+		// If setName throws, we need to unregister the signature we just added
 		if( $name )
 		{
-			$route->setName( $name );
+			try
+			{
+				$route->setName( $name );
+			}
+			catch( Exceptions\DuplicateRouteException $e )
+			{
+				// Rollback: unregister the signature we added in checkDuplicateRoute
+				$signature = "{$method}:{$routeName}";
+				unset( $this->_registeredRoutes[ $signature ] );
+				throw $e;
+			}
 		}
 
 		$routes[] = $route;
@@ -261,26 +407,29 @@ class Router extends Memory implements IRunnable
 	 * allowing duplicate name detection to work properly even when names
 	 * are set after route registration.
 	 *
+	 * In strict mode, duplicate names throw an exception. In non-strict mode,
+	 * the first registered name wins (subsequent attempts to register the same
+	 * name are silently ignored).
+	 *
 	 * @param string $name The route name to register
 	 * @param string $method The HTTP method (GET, POST, PUT, DELETE)
 	 * @param string $path The route path
 	 * @param RouteMap $route The route being named
 	 * @return void
-	 * @throws Exceptions\DuplicateRouteException If name is already in use
+	 * @throws Exceptions\DuplicateRouteException If name is already in use and strict mode is enabled
 	 */
 	public function registerRouteName( string $name, string $method, string $path, RouteMap $route ): void
 	{
-		// Only check for duplicates if strict mode is enabled
-		if( !$this->_strictMode )
-		{
-			$this->_registeredNames[ $name ] = "{$method}:{$path}";
-			return;
-		}
-
 		// Check if this name is already registered
 		if( isset( $this->_registeredNames[ $name ] ) )
 		{
-			// Parse the original route's signature to get method and path
+			// In non-strict mode, first match wins - don't overwrite
+			if( !$this->_strictMode )
+			{
+				return;
+			}
+
+			// Strict mode: throw exception for duplicate name
 			$originalSignature = $this->_registeredNames[ $name ];
 			list( $originalMethod, $originalPath ) = explode( ':', $originalSignature, 2 );
 
@@ -295,7 +444,7 @@ class Router extends Memory implements IRunnable
 			);
 		}
 
-		// Register the name
+		// Register the name (first time only)
 		$this->_registeredNames[ $name ] = "{$method}:{$path}";
 	}
 
@@ -314,12 +463,16 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
-	 * Check if a route is a duplicate and throw exception if found.
+	 * Check if a route is a duplicate and throw exception if found (in strict mode).
+	 *
+	 * This method always registers the route signature for tracking. In strict mode,
+	 * it throws an exception if a duplicate is found. In non-strict mode, the first
+	 * registered route wins and subsequent duplicates are allowed (first match wins).
 	 *
 	 * @param RouteMap $route The route being added
 	 * @param string $method The HTTP method (GET, POST, PUT, DELETE)
 	 * @return void
-	 * @throws Exceptions\DuplicateRouteException
+	 * @throws Exceptions\DuplicateRouteException If duplicate found and strict mode is enabled
 	 */
 	protected function checkDuplicateRoute( RouteMap $route, string $method ): void
 	{
@@ -329,7 +482,13 @@ class Router extends Memory implements IRunnable
 		// Check for duplicate method+path combination
 		if( isset( $this->_registeredRoutes[ $signature ] ) )
 		{
-			// First route has same method and path as the new route
+			// In non-strict mode, first match wins - don't throw, don't overwrite
+			if( !$this->_strictMode )
+			{
+				return;
+			}
+
+			// Strict mode: throw exception for duplicate
 			throw new Exceptions\DuplicateRouteException(
 				$method,  // First route method (same as second)
 				$path,    // First route path (same as second)
@@ -341,7 +500,7 @@ class Router extends Memory implements IRunnable
 			);
 		}
 
-		// Register this route (name registration is handled separately by registerRouteName)
+		// Register this route (first time only - name registration is handled separately by registerRouteName)
 		$this->_registeredRoutes[ $signature ] = $this->extractControllerInfo( $route );
 	}
 

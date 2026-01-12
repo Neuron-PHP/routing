@@ -223,17 +223,20 @@ class RouteMap
 			return $this;
 		}
 
-		// If router context is set, unregister old name and register the new one
+		// If router context is set, register new name and unregister old
 		if( $this->_router && $this->_method )
 		{
-			// Unregister the old name if one exists
-			if( $this->Name !== '' )
-			{
-				$this->_router->unregisterRouteName( $this->Name );
-			}
+			$oldName = $this->Name;
 
-			// Register the new name (will check for duplicates)
+			// Register the new name first (will check for duplicates and throw if needed)
+			// Only if this succeeds do we unregister the old name
 			$this->_router->registerRouteName( $name, $this->_method, $this->Path, $this );
+
+			// Registration succeeded, safe to unregister the old name
+			if( $oldName !== '' )
+			{
+				$this->_router->unregisterRouteName( $oldName );
+			}
 		}
 
 		$this->Name = $name;
