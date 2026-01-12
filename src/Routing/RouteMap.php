@@ -46,6 +46,12 @@ class RouteMap
 	public string $Name;
 	public array $Payload;
 
+	/** @var Router|null Reference to router for name validation */
+	private ?Router $_router = null;
+
+	/** @var string|null HTTP method for this route (GET, POST, etc.) */
+	private ?string $_method = null;
+
 	/**
 	 * RouteMap constructor.
 	 * @param $path string route path i.e. /part/new or /part/:id
@@ -77,6 +83,19 @@ class RouteMap
 
 		$this->Name       = '';
 		$this->Payload    = [];
+	}
+
+	/**
+	 * Set the router and method for this route (used for name duplicate detection)
+	 * @param Router $router
+	 * @param string $method HTTP method (GET, POST, PUT, DELETE)
+	 * @return RouteMap
+	 */
+	public function setRouterContext( Router $router, string $method ): RouteMap
+	{
+		$this->_router = $router;
+		$this->_method = $method;
+		return $this;
 	}
 
 	/**
@@ -190,11 +209,20 @@ class RouteMap
 	}
 
 	/**
+	 * Set the name for this route and register it with the router for duplicate detection.
+	 *
 	 * @param mixed $name
 	 * @return RouteMap
+	 * @throws Exceptions\DuplicateRouteException If name is already in use
 	 */
 	public function setName( $name ) : RouteMap
 	{
+		// If router context is set, register the name for duplicate detection
+		if( $this->_router && $this->_method )
+		{
+			$this->_router->registerRouteName( $name, $this->_method, $this->Path, $this );
+		}
+
 		$this->Name = $name;
 		return $this;
 	}

@@ -230,15 +230,18 @@ class Router extends Memory implements IRunnable
 			$routeName = substr( $routeName, 0, -1 );
 		}
 
-		$route    = new RouteMap( $routeName, $function, $filters ?? '' );
+		$route = new RouteMap( $routeName, $function, $filters ?? '' );
 
-		// Set the route name BEFORE checking for duplicates
+		// Set router context so the route can register names for duplicate detection
+		$route->setRouterContext( $this, $method );
+
+		// Set the route name if provided (this will trigger duplicate name check)
 		if( $name )
 		{
 			$route->setName( $name );
 		}
 
-		// Check for duplicate routes if strict mode is enabled
+		// Check for duplicate path+method combinations if strict mode is enabled
 		if( $this->_strictMode )
 		{
 			$this->checkDuplicateRoute( $route, $method );
@@ -247,6 +250,51 @@ class Router extends Memory implements IRunnable
 		$routes[] = $route;
 
 		return $route;
+	}
+
+	/**
+	 * Register a route name and check for duplicates (called by RouteMap::setName).
+	 *
+	 * This method is called when a route name is set via the fluent API,
+	 * allowing duplicate name detection to work properly even when names
+	 * are set after route registration.
+	 *
+	 * @param string $name The route name to register
+	 * @param string $method The HTTP method (GET, POST, PUT, DELETE)
+	 * @param string $path The route path
+	 * @param RouteMap $route The route being named
+	 * @return void
+	 * @throws Exceptions\DuplicateRouteException If name is already in use
+	 */
+	public function registerRouteName( string $name, string $method, string $path, RouteMap $route ): void
+	{
+		// Only check for duplicates if strict mode is enabled
+		if( !$this->_strictMode )
+		{
+			$this->_registeredNames[ $name ] = "{$method}:{$path}";
+			return;
+		}
+
+		// Check if this name is already registered
+		if( isset( $this->_registeredNames[ $name ] ) )
+		{
+			// Parse the original route's signature to get method and path
+			$originalSignature = $this->_registeredNames[ $name ];
+			list( $originalMethod, $originalPath ) = explode( ':', $originalSignature, 2 );
+
+			throw new Exceptions\DuplicateRouteException(
+				$originalMethod,  // First route method
+				$originalPath,    // First route path
+				$this->_registeredRoutes[ $originalSignature ] ?? 'unknown controller',
+				$method,          // Second route method
+				$path,            // Second route path
+				$this->extractControllerInfo( $route ),
+				$name
+			);
+		}
+
+		// Register the name
+		$this->_registeredNames[ $name ] = "{$method}:{$path}";
 	}
 
 	/**
@@ -277,32 +325,8 @@ class Router extends Memory implements IRunnable
 			);
 		}
 
-		// Check for duplicate route name
-		$name = $route->getName();
-		if( $name && isset( $this->_registeredNames[ $name ] ) )
-		{
-			// Parse the original route's signature to get method and path
-			$originalSignature = $this->_registeredNames[ $name ];
-			list( $originalMethod, $originalPath ) = explode( ':', $originalSignature, 2 );
-
-			throw new Exceptions\DuplicateRouteException(
-				$originalMethod,  // First route method
-				$originalPath,    // First route path
-				$this->_registeredRoutes[ $originalSignature ],
-				$method,          // Second route method
-				$path,            // Second route path
-				$this->extractControllerInfo( $route ),
-				$name
-			);
-		}
-
-		// Register this route
+		// Register this route (name registration is handled separately by registerRouteName)
 		$this->_registeredRoutes[ $signature ] = $this->extractControllerInfo( $route );
-
-		if( $name )
-		{
-			$this->_registeredNames[ $name ] = $signature;
-		}
 	}
 
 	/**
