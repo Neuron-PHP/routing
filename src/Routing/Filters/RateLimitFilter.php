@@ -2,6 +2,7 @@
 
 namespace Neuron\Routing\Filters;
 
+use Neuron\Core\Registry\RegistryKeys;
 use Neuron\Routing\Filter;
 use Neuron\Routing\RouteMap;
 use Neuron\Routing\RateLimit\RateLimitConfig;
@@ -53,7 +54,7 @@ class RateLimitFilter extends Filter
 		$this->_ipResolver = $ipResolver ?? new DefaultIpResolver();
 
 		// Get base path from registry if available
-		$basePath = Registry::getInstance()->get( 'BasePath' ) ?? '';
+		$basePath = Registry::getInstance()->get( RegistryKeys::BASE_PATH_LEGACY ) ?? '';
 
 		// Create storage instance
 		$this->_storage = RateLimitStorageFactory::create( $config, $basePath );
@@ -156,7 +157,7 @@ class RateLimitFilter extends Filter
 	protected function getUserId(): string
 	{
 		// Check registry for user ID (set by authentication)
-		$userId = Registry::getInstance()->get( 'User.Id' );
+		$userId = Registry::getInstance()->get( RegistryKeys::USER_ID );
 
 		if( $userId )
 		{

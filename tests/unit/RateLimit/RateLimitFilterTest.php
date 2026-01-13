@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use Neuron\Core\Registry\RegistryKeys;
 use Neuron\Routing\Filters\RateLimitFilter;
 use Neuron\Routing\RateLimit\RateLimitConfig;
 use Neuron\Routing\RateLimit\Storage\MemoryRateLimitStorage;
@@ -290,7 +291,7 @@ class RateLimitFilterTest extends TestCase
 	public function testGetUserIdWithRegistryUser()
 	{
 		// Set user ID in registry
-		Registry::getInstance()->set('User.Id', 123);
+		Registry::getInstance()->set(RegistryKeys::USER_ID, 123);
 
 		$config = new RateLimitConfig([
 			'enabled' => true,
@@ -309,13 +310,13 @@ class RateLimitFilterTest extends TestCase
 		$this->assertEquals('user:123', $userId);
 
 		// Clean up
-		Registry::getInstance()->set('User.Id', null);
+		Registry::getInstance()->set(RegistryKeys::USER_ID, null);
 	}
 
 	public function testGetUserIdFallbackToIp()
 	{
 		// Ensure no user in registry
-		Registry::getInstance()->set('User.Id', null);
+		Registry::getInstance()->set(RegistryKeys::USER_ID, null);
 
 		$_SERVER['REMOTE_ADDR'] = '192.168.1.100';
 

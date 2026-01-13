@@ -3,6 +3,7 @@
 namespace Neuron\Routing;
 
 use Neuron\Core\NString;
+use Neuron\Core\Registry\RegistryKeys;
 use Neuron\Log\Log;
 use Neuron\Patterns\IRunnable;
 use Neuron\Patterns\Registry;
@@ -959,7 +960,7 @@ class Router extends Memory implements IRunnable
 		// If absolute URL requested, prepend base URL
 		if( $absolute )
 		{
-			$baseUrl = Registry::getInstance()->get( 'Base.Url' );
+			$baseUrl = Registry::getInstance()->get( RegistryKeys::BASE_URL );
 			if( $baseUrl )
 			{
 				return rtrim( $baseUrl, '/' ) . $path;
