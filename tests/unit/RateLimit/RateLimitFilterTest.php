@@ -184,11 +184,9 @@ class RateLimitFilterTest extends TestCase
 		// The keys should be different
 		$reflectionIp = new ReflectionClass($filterIp);
 		$methodIp = $reflectionIp->getMethod('generateKey');
-		$methodIp->setAccessible(true);
 
 		$reflectionRoute = new ReflectionClass($filterRoute);
 		$methodRoute = $reflectionRoute->getMethod('generateKey');
-		$methodRoute->setAccessible(true);
 
 		$keyIp = $methodIp->invoke($filterIp, $route);
 		$keyRoute = $methodRoute->invoke($filterRoute, $route);
@@ -224,7 +222,6 @@ class RateLimitFilterTest extends TestCase
 		// Use reflection to verify the IP being used
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('generateKey');
-		$method->setAccessible(true);
 
 		$key = $method->invoke($filter, $route);
 
@@ -252,7 +249,6 @@ class RateLimitFilterTest extends TestCase
 		// Use reflection to verify IP resolution
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('generateKey');
-		$method->setAccessible(true);
 
 		$key = $method->invoke($filter, $route);
 
@@ -280,7 +276,6 @@ class RateLimitFilterTest extends TestCase
 		// Use reflection to verify IP resolution
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('generateKey');
-		$method->setAccessible(true);
 
 		$key = $method->invoke($filter, $route);
 
@@ -303,7 +298,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getUserId');
-		$method->setAccessible(true);
 
 		$userId = $method->invoke($filter);
 
@@ -329,7 +323,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getUserId');
-		$method->setAccessible(true);
 
 		$userId = $method->invoke($filter);
 
@@ -350,7 +343,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getCustomKey');
-		$method->setAccessible(true);
 
 		$key = $method->invoke($filter, $route);
 
@@ -370,7 +362,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('isBlacklisted');
-		$method->setAccessible(true);
 
 		$this->assertTrue($method->invoke($filter, '192.168.1.50'));
 		$this->assertTrue($method->invoke($filter, '10.0.0.100'));
@@ -390,7 +381,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getLimit');
-		$method->setAccessible(true);
 
 		// Blacklisted should get limit / 10
 		$this->assertEquals(10, $method->invoke($filter, '192.168.1.50'));
@@ -411,7 +401,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getWindow');
-		$method->setAccessible(true);
 
 		$window = $method->invoke($filter, 'any_key');
 
@@ -450,7 +439,6 @@ class RateLimitFilterTest extends TestCase
 		// Can't test actual headers in CLI, but can invoke the method
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('addRateLimitHeaders');
-		$method->setAccessible(true);
 
 		// Should not throw exception
 		try {
@@ -476,7 +464,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('generateKey');
-		$method->setAccessible(true);
 
 		$key = $method->invoke($filter, $route);
 
@@ -497,7 +484,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getClientIp');
-		$method->setAccessible(true);
 
 		$ip = $method->invoke($filter);
 
@@ -519,7 +505,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('getClientIp');
-		$method->setAccessible(true);
 
 		$ip = $method->invoke($filter);
 
@@ -538,7 +523,6 @@ class RateLimitFilterTest extends TestCase
 
 		$reflection = new ReflectionClass($filter);
 		$method = $reflection->getMethod('isWhitelisted');
-		$method->setAccessible(true);
 
 		$this->assertTrue($method->invoke($filter, '192.168.1.100'));
 		$this->assertTrue($method->invoke($filter, '10.0.0.1'));

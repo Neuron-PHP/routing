@@ -300,7 +300,6 @@ class FileRateLimitStorageTest extends TestCase
 		// Get the file path
 		$reflection = new \ReflectionClass( $storage );
 		$method = $reflection->getMethod( 'getFilePath' );
-		$method->setAccessible( true );
 		$filePath = $method->invoke( $storage, $key );
 
 		// Read the file, modify timestamps to be old, write back
@@ -328,7 +327,6 @@ class FileRateLimitStorageTest extends TestCase
 		// Get the file path
 		$reflection = new \ReflectionClass( $storage );
 		$method = $reflection->getMethod( 'getFilePath' );
-		$method->setAccessible( true );
 		$filePath = $method->invoke( $storage, $key );
 
 		// Write empty data
@@ -397,7 +395,6 @@ class FileRateLimitStorageTest extends TestCase
 		// Get file path using reflection
 		$reflection = new \ReflectionClass( $storage );
 		$method = $reflection->getMethod( 'getFilePath' );
-		$method->setAccessible( true );
 		$filePath = $method->invoke( $storage, $key );
 
 		// Create a corrupted file
@@ -571,7 +568,6 @@ class FileRateLimitStorageTest extends TestCase
 		// Get file path using reflection
 		$reflection = new \ReflectionClass( $storage );
 		$method = $reflection->getMethod( 'getFilePath' );
-		$method->setAccessible( true );
 		$filePath = $method->invoke( $storage, $key );
 
 		// Write corrupted data
@@ -650,7 +646,6 @@ class FileRateLimitStorageTest extends TestCase
 
 		$reflection = new \ReflectionClass( $storage );
 		$method = $reflection->getMethod( 'readFile' );
-		$method->setAccessible( true );
 
 		$result = $method->invoke( $storage, $this->testDir . '/nonexistent.rl' );
 		$this->assertNull( $result );
@@ -666,7 +661,6 @@ class FileRateLimitStorageTest extends TestCase
 
 		$reflection = new \ReflectionClass( $storage );
 		$writeMethod = $reflection->getMethod( 'writeFile' );
-		$writeMethod->setAccessible( true );
 
 		$testFile = $this->testDir . '/write_test.rl';
 		$testData = ['attempts' => [$this->clock->time()]];
@@ -677,7 +671,6 @@ class FileRateLimitStorageTest extends TestCase
 
 		// Verify content
 		$readMethod = $reflection->getMethod( 'readFile' );
-		$readMethod->setAccessible( true );
 		$readData = $readMethod->invoke( $storage, $testFile );
 
 		$this->assertIsArray( $readData );
