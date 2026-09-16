@@ -268,6 +268,46 @@ PHP;
 		rmdir( $tempDir );
 	}
 
+	public function testFindClassesInDirectoryIsSorted(): void
+	{
+		$tempDir = sys_get_temp_dir() . '/neuron_scanner_sort_' . uniqid();
+		mkdir( $tempDir, 0777, true );
+
+		$ns = 'TempSort' . uniqid();
+		foreach( [ 'ZebraController', 'HomeController', 'AdminController' ] as $class )
+		{
+			file_put_contents(
+				"$tempDir/$class.php",
+				"<?php\nnamespace $ns;\nclass $class {}\n"
+			);
+			require_once "$tempDir/$class.php";
+		}
+
+		try
+		{
+			$scanner = new RouteScanner();
+			$method = new \ReflectionMethod( $scanner, 'findClassesInDirectory' );
+			$classes = $method->invoke( $scanner, $tempDir, $ns );
+
+			$this->assertSame(
+				[
+					$ns . '\\AdminController',
+					$ns . '\\HomeController',
+					$ns . '\\ZebraController',
+				],
+				$classes
+			);
+		}
+		finally
+		{
+			foreach( [ 'ZebraController', 'HomeController', 'AdminController' ] as $class )
+			{
+				@unlink( "$tempDir/$class.php" );
+			}
+			@rmdir( $tempDir );
+		}
+	}
+
 	public function testScanDirectoryWithNonControllerFiles()
 	{
 		// Create a temporary directory with non-controller PHP files
