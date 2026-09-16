@@ -712,4 +712,54 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		// Just verify no exception was thrown
 		$this->assertTrue( true );
 	}
+
+	public function testRedirectResolverShortCircuitsRoute()
+	{
+		$this->Router->get( '/old', function() { return 'route-hit'; } );
+		$this->Router->setRedirectResolver( function( string $uri ) {
+			return $uri === '/old' ? 'redirected' : null;
+		} );
+
+		$result = $this->Router->run(
+			[
+				'route' => '/old',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'redirected', $result );
+	}
+
+	public function testRedirectResolverNullFallsThroughToRoute()
+	{
+		$this->Router->get( '/page', function() { return 'ok'; } );
+		$this->Router->setRedirectResolver( function() { return null; } );
+
+		$result = $this->Router->run(
+			[
+				'route' => '/page',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'ok', $result );
+	}
+
+	public function testRedirectResolverRunsBeforeRewrite()
+	{
+		$this->Router->setUrlRewrites( [ '/legacy' => '/old' ] );
+		$this->Router->get( '/old', function() { return 'rewritten-route'; } );
+		$this->Router->setRedirectResolver( function( string $uri ) {
+			return $uri === '/legacy' ? 'direct-redirect' : null;
+		} );
+
+		$result = $this->Router->run(
+			[
+				'route' => '/legacy',
+				'type'  => 'GET'
+			]
+		);
+
+		$this->assertEquals( 'direct-redirect', $result );
+	}
 }
