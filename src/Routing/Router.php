@@ -66,6 +66,9 @@ class Router extends Memory implements IRunnable
 	/** @var array URL rewrites: ['/from' => '/to'] */
 	private array $_urlRewrites = [];
 
+	/** @var callable|null Optional HTTP redirect resolver. Receives the incoming URI. */
+	private mixed $_redirectResolver = null;
+
 	/**
 	 * Set the IP resolver for all requests handled by this router.
 	 *
@@ -233,6 +236,21 @@ class Router extends Memory implements IRunnable
 	public function setUrlRewrites( array $rewrites ): void
 	{
 		$this->_urlRewrites = $rewrites;
+	}
+
+	/**
+	 * Register a callback that can short-circuit routing with an HTTP redirect.
+	 *
+	 * The callback receives the incoming URI (empty paths already normalized to
+	 * `/`) and runs before YAML rewrites and route matching. Return `null` to
+	 * continue routing. Any other return value is passed back from `run()`.
+	 * A callback that emits headers and exits is also valid.
+	 *
+	 * @param callable|null $resolver fn(string $uri): mixed
+	 */
+	public function setRedirectResolver( ?callable $resolver ): void
+	{
+		$this->_redirectResolver = $resolver;
 	}
 
 	/**
@@ -872,6 +890,16 @@ class Router extends Memory implements IRunnable
 		if( $uri === '' )
 		{
 			$uri = '/';
+		}
+
+		if( $this->_redirectResolver )
+		{
+			$redirect = ( $this->_redirectResolver )( $uri );
+
+			if( $redirect !== null )
+			{
+				return $redirect;
+			}
 		}
 
 		// Apply URL rewrites before route matching
