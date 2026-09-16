@@ -183,6 +183,8 @@ class RouteScanner
 			}
 		}
 
+		sort( $classes );
+
 		return $classes;
 	}
 
