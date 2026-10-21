@@ -567,6 +567,16 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		$this->assertSame( $filter, $retrieved );
 	}
 
+	public function testHasFilter()
+	{
+		$this->assertFalse( $this->Router->hasFilter( 'auth' ) );
+
+		$this->Router->registerFilter( 'auth', new Routing\Filter( function() { return true; }, null ) );
+
+		$this->assertTrue( $this->Router->hasFilter( 'auth' ) );
+		$this->assertFalse( $this->Router->hasFilter( 'Auth' ) );
+	}
+
 	public function testGetFilterNotFound()
 	{
 		$this->expectException( \Exception::class );

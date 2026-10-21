@@ -341,6 +341,17 @@ class Router extends Memory implements IRunnable
 	}
 
 	/**
+	 * Whether a filter has been registered under this name.
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	public function hasFilter( string $name ): bool
+	{
+		return array_key_exists( $name, $this->_filterRegistry );
+	}
+
+	/**
 	 * @param string $routeName
 	 * @return Filter
 	 * @throws \Exception
