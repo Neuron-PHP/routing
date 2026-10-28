@@ -31,5 +31,6 @@ cache.properties
 composer.lock
 
 .phpunit.result.cache
+.phpunit.cache
 
 coverage.xml
