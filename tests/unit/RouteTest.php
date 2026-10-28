@@ -2,6 +2,7 @@
 
 use Neuron\Log\Log;
 use Neuron\Log\RunLevel;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 use Neuron\Routing;
 
@@ -138,9 +139,7 @@ class RouteTest extends TestCase
 
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
+	#[DoesNotPerformAssertions]
 	public function testDispatch()
 	{
 		Routing\Route::get( '/', function(){} );

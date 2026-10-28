@@ -1,6 +1,7 @@
 <?php
 
 use Neuron\Routing;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
 class RouterTest extends PHPUnit\Framework\TestCase
 {
@@ -206,9 +207,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		);
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
+	#[DoesNotPerformAssertions]
 	public function testDispatch()
 	{
 		$this->Router->delete(
@@ -226,9 +225,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		$this->Router->dispatch( $Route );
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
+	#[DoesNotPerformAssertions]
 	public function testRunSuccess()
 	{
 		$this->Router->get( '/', function(){} );
@@ -248,9 +245,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		}
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
+	#[DoesNotPerformAssertions]
 	public function testRunMissingRoute()
 	{
 		$this->Router->get( '/', function(){} );
@@ -265,9 +260,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		}
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
+	#[DoesNotPerformAssertions]
 	public function testRun404Fail()
 	{
 		$this->Router->get( '/', function(){} );
@@ -309,9 +302,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
 		}
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
+	#[DoesNotPerformAssertions]
 	public function testEmptyRoute()
 	{
 		$this->Router->get( '/',    function(){} );
